@@ -22,6 +22,7 @@ Clone this repository and install it:
 
 ```bash
 git clone -b dev https://github.com/bugsounet/EXT-Pages
+cd EXT-Pages
 npm install
 ```
 
