@@ -21,7 +21,7 @@ cd ~/MagicMirror/modules
 Clone this repository and install it:
 
 ```bash
-git clone https://github.com/bugsounet/EXT-Pages
+git clone -b dev https://github.com/bugsounet/EXT-Pages
 npm install
 ```
 
