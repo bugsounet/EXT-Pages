@@ -1,33 +1,12 @@
-## Maintainer needed
+# Ext-Pages (aska MMM-pages v2)
 
-Hello, it's been 5 years since I've written this! While I'm happy to see it
-thriving, it's also about time I step away. I haven't had a magic mirror up
-in years, and to be frank, I'm hoping someone else will be willing to take
-up maintainership of the project.
-
-I find this project to be in a near complete form. Other than a few mishaps of
-me not having proper testing before pushing out code, more often than not any
-problems that people have usually isn't often because of this project. The few
-issues that do exist aren't very hard to fix nor are they severe that they
-impact the project in any large manner. It's just I haven't had the time nor
-motivation to fix them.
-
-I don't think there are expectations for this project to have new features, so
-a maintainer should really only need to just make sure people are getting help
-when they raise issues and fix the rare bug that pops out every so often. If
-you're interested, please don't hesitate to reach out.
-
----
-
-# MMM-pages
-
-This [MagicMirror²][mm] Module allows you to have pages in your magic mirror!
-Want to have more modules in your magic mirror, but want to keep the format?
-Or, want to have grouped modules that are themed together? Look no further!
+This [MagicMirror²][mm²] Module allows you to have animated pages in your magic mirror!<br>
+Want to have more modules in your magic mirror, but want to keep the format?<br>
+Or, want to have grouped modules that are themed together? Look no further!<br>
 
 ![Example](example.webp)
 
-Note that this module does not provide any method of manually changing the page!
+Note that this module does not provide any method of manually changing the page!<br>
 You should ask other developers to add a notification to their modules, or add
 one yourself!
 
@@ -39,85 +18,86 @@ In your terminal, go to your MagicMirror's Module folder:
 cd ~/MagicMirror/modules
 ```
 
-Clone this repository:
+Clone this repository and install it:
 
 ```bash
-git clone https://github.com/edward-shen/MMM-pages.git
+git clone https://github.com/bugsounet/EXT-Pages
+npm install
 ```
 
 Configure the module in your config.js file.
 
-*\<self-promotion>*
-
-To display what page you're on, I'd highly recommend checking out my
-[page indicator module][page indicator].
-
-*\<\\self-promotion>*
-
 ## Using the module
 
-To use this module, add it to the modules array in the `config/config.js` file.
+To use this module, add it to the modules array in the `config/config.js` file.<br>
 Note: module names used in the following example are fictitious.
 
 ```js
-modules: [
-    {
-        module: 'MMM-pages',
-        config: {
-                modules:
-                    [[ "newsfeed" ],
-                     [ "calendar", "compliments" ]],
-                fixed: [ "clock", "weather", "MMM-page-indicator" ],
-                hiddenPages: {
-                    "screenSaver": [ "clock", "MMM-SomeBackgroundImageModule" ],
-                    "admin": [ "MMM-ShowMeSystemStatsModule", "MMM-AnOnScreenMenuModule" ],
-                },
-        }
-    }
-]
+{
+  module: "EXT-Pages",
+  position: "bottom_bar",
+  config: {
+    pages: {
+      0: [ "newsfeed" ],
+      1: [ "calendar", "compliments" ]
+    },
+    fixed: [ "clock", "weather" ],
+    hiddenPages: {
+      "screenSaver": [ "clock", "MMM-SomeBackgroundImageModule" ],
+      "admin": [ "MMM-ShowMeSystemStatsModule", "MMM-AnOnScreenMenuModule" ],
+    },
+    animates: {
+      "newsfeed": 24,
+      "calendar": 36,
+      "compliments": 51,
+      "weather": 37
+    },
+    indicator: true,
+    rotationTime: 15000
+  }
+},
+
 ```
 
 ## Configuration options
 
 | Option | Type | Default Value | Description |
 | --- | --- | --- | --- |
-| `modules`           | `[[String...]...]`         | `[]`                     | A 2D String array of what each module should be on which page. Note that all entries must take their class name (e.g. this module's class name is `MMM-pages`, while the default modules may just have `newsfeed`, without the `MMM-` prefix. |
-| `fixed`             | `[String...]`              | `["MMM-page-indicator"]` | Which modules should show up all the time. |
-| `excludes`          | *NA*                       | *NA*                     | **Deprecated**. Use `fixed` instead. |
+| `pages`             | `{Number: [String...]...}` | `{}`                     | An Object String number of what each module should be on which page. Note that all entries must take their class name (e.g. this module's class name is `EXT-Pages`, while the default modules may just have `newsfeed`, without the `MMM-` or `EXT-` prefix. |
+| `fixed`             | `[String...]`              | `[]`                     | Which modules should show up all the time. |
 | `hiddenPages`       | `{String: [String...]...}` | `{}`                     | An Object defining special `hiddenPages` which are not available on the normal page rotation and only accassible via a notification. Modules defined in `fixed` are ignored and need to be also added if you wish to have them on any hidden page. |
+| `animates`          | `{String: Number,...}`     | `{}`                     | An Object with module name and special animates number (see below)
 | `animationTime`     | `int`                      | `1000`                   | Fading animation time. Set to `0` for instant change. Value is in milliseconds (1 second = 1000 milliseconds). |
 | `rotationTime`      | `int`                      | `0`                      | Time, in milliseconds, between automatic page changes. |
 | `rotationDelay`     | `int`                      | `10000`                  | Time, in milliseconds, of how long should a manual page change linger before returning to automatic page changing. In other words, how long should the timer wait for after you manually change a page. This does include the animation time, so you may wish to increase it by a few seconds or so to account for the animation time. |
 | `rotationHomePage`  | `int`                      | `0`                      | Time, in milliseconds, before automatically returning to the home page. If a home page is not set, this returns to the leftmost page instead. |
-| `rotationFirstPage` | *NA*                       | *NA*                     | **Deprecated**. Use `rotationHomePage` instead. |
 | `homePage`          | `int`                      | `0`                      | Which page index is the home page. If none is set, this returns to the leftmost page instead. |
 | `useLockString`     | `bool`                     | `true`                   | Whether or not to use a lock string to show or hide pages. If disabled, other modules may override when modules may be shown. _Advanced users only. Only override this if you know what you're doing._
-
-For the `module` configuration option, the first element of the outer array
-should consist of elements that should be on the first page. The second element
-should consist of elements that should be on the second page, and so forth.
+| `indicator`         | `bool`                     | `true`                   | Activate page-indicator |
+| `activeBright`      | `bool`                     | `false`                  | Should the active circle be bright ? (only if indicator activated)|
+| `inactiveDimmed`	  | `bool`                     | `true`                   | Should the inactive circles be dimmed? (only if indicator activated)|
+| `inactiveHollow`	  | `bool`                     | `true`                   | Should the inactive circles be hollow? (only if indicator activated)|
 
 ## Notifications
 
-The following is the list of notifications that MMM-pages will handle:
+The following is the list of notifications that EXT-Pages will handle:
 
 | Notification | Payload type | Description |
 | --- | --- | --- |
-| `PAGE_CHANGED`      | `int`           | MMM-pages will switch to the provided page index. |
-| `PAGE_INCREMENT`    | `int`, Optional | MMM-pages will increment the page, or by `n` times if a number is provided. Not providing a number is equivalent to sending a payload of `1`. If there are no more pages to increment by, this will loop around to the first page. |
-| `PAGE_DECREMENT`    | `int`, Optional | MMM-pages will decrement the page, or by `n` times if a number is provided. Not providing a number is equivalent to sending a payload of `1`. If there are no more pages to decrement by, this will loop around to the last page. |
-| `QUERY_PAGE_NUMBER` | *None*          | MMM-pages will respond with `PAGE_NUMBER_IS` with the current page index. |
-| `PAUSE_ROTATION`    | *None*          | If MMM-pages is set to rotate, this will pause rotation until a `RESUME_ROTATION` notification is sent. This does nothing if rotation was already paused. |
-| `RESUME_ROTATION`   | *None*          | If MMM-pages was requested to pause rotation, this will resume automatic rotation. This does nothing MMM-pages was not requested to pause. |
+| `PAGE_CHANGED`      | `int`           | EXT-Pages will switch to the provided page index. |
+| `PAGE_INCREMENT`    | `int`, Optional | EXT-Pages will increment the page, or by `n` times if a number is provided. Not providing a number is equivalent to sending a payload of `1`. If there are no more pages to increment by, this will loop around to the first page. |
+| `PAGE_DECREMENT`    | `int`, Optional | EXT-Pages will decrement the page, or by `n` times if a number is provided. Not providing a number is equivalent to sending a payload of `1`. If there are no more pages to decrement by, this will loop around to the last page. |
+| `QUERY_PAGE_NUMBER` | *None*          | EXT-Pages will respond with `PAGE_NUMBER_IS` with the current page index. |
+| `PAUSE_ROTATION`    | *None*          | If EXT-Pages is set to rotate, this will pause rotation until a `RESUME_ROTATION` notification is sent. This does nothing if rotation was already paused. |
+| `RESUME_ROTATION`   | *None*          | If EXT-Pages was requested to pause rotation, this will resume automatic rotation. This does nothing EXT-Pages was not requested to pause. |
 | `HOME_PAGE`         | *None*          | Return to the home page. If no home page is provided, return to the first page instead. |
-| `SHOW_HIDDEN_PAGE`  | `String`        | MMM-pages will switch to the provided hidden page name. |
-| `LEAVE_HIDDEN_PAGE` | *None*          | MMM-pages will leave the currently showing hidden page and return to the previous showing page index. |
+| `SHOW_HIDDEN_PAGE`  | `String`        | EXT-Pages will switch to the provided hidden page name. |
+| `LEAVE_HIDDEN_PAGE` | *None*          | EXT-Pages will leave the currently showing hidden page and return to the previous showing page index. |
 
-The following is the list of notifications that MMM-pages sends out:
+The following is the list of notifications that EXT-Pages sends out:
 
 | Notification        | Payload type | Description                                                                                                                                                    |
 | ------------------- | ------------ | -------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| `MAX_PAGES_CHANGED` | `int`        | This is sent only once during initialization of MMM-pages. This contains the number of pages defined in `config.js`.                                           |
 | `NEW_PAGE`          | `int`        | This notification is sent out on every page change and contains the current page index. This is to help other modules keep track of what the current page is. This is also sent out during initialization. |
 | `PAGE_NUMBER_IS`    | `int`        | Sent in response to a `QUERY_PAGE_NUMBER` notification. Returns the current page index. This notification sends the same payload as `NEW_PAGE`.                |
 
@@ -141,18 +121,7 @@ config in the config file. There is no way to dynamically change the pages you
 have. If there arises a need, please create an issue.
 
 This module does not enforce how other modules represents or even responds to
-MMM-pages notifications.
-
-### Initialization
-
-_This section provides documentation on what notifications the module sends on
-startup. This section isn't necessary to read for most users._
-
-MMM-pages doesn't activate until we receive the `DOM_OBJECTS_CREATED`
-notification, as that notification ensures all modules have been loaded. On this
-notification, we send two notifications out, `MAX_PAGES_CHANGED` and `NEW_PAGE`,
-so other modules that would like to keep synchronized of the starting page and
-max pages have a way to determine which page to start on.
+EXT-Pages notifications.
 
 ### Hidden pages
 
@@ -163,37 +132,85 @@ specific modules are shown and you do not want to have them in your normal page 
 
 These hidden pages are only accessible via notifications, so you need to send them from
 other modules. Examples integrations could be with touch, bots or voice commands.
-See also FAQ below.
 
-## FAQ
+### animates feature
 
-- How do I interact with different pages?
+animated feature allows to define an animation to a module<br>
+There is actually 55 animations available.<br>
+We use [animate.css](https://animate.style/)<br>
+All animations are defined by a number.
 
-  MMM-pages intentionally does not provide methods to interact with the pages.
-  This is intentional by design, as there are too many ways to interact with a
-  Magic Mirror. [MMM-page-indicator][page indicator] does provide a way to click
-  on the circles to change pages, but this requires the ability to click or tap
-  on the circles itself. If no other method is available, MMM-pages provides an
-  automatic rotation feature.
+```js
+      // Attention seekers
+      1: "bounce"
+      2: "flash"
+      3: "pulse"
+      4: "rubberBand"
+      5: "shakeX"
+      6: "shakeY"
+      7: "headShake"
+      8: "swing"
+      9: "tada"
+      10: "wobble"
+      11: "jello"
+      12: "heartBeat"
+      // Back entrances
+      13: "backInDown"
+      14: "backInLeft"
+      15: "backInRight"
+      16: "backInUp"
+      // Bouncing entrances
+      17: "bounceIn"
+      18: "bounceInDown"
+      19: "bounceInLeft"
+      20: "bounceInRight"
+      21: "bounceInUp"
+      // Fading entrances
+      22: "fadeIn"
+      23: "fadeInDown"
+      24: "fadeInDownBig"
+      25: "fadeInLeft"
+      26: "fadeInLeftBig"
+      27: "fadeInRight"
+      28: "fadeInRightBig"
+      29: "fadeInUp"
+      30: "fadeInUpBig"
+      31: "fadeInTopLeft"
+      32: "fadeInTopRight"
+      33: "fadeInBottomLeft"
+      34: "fadeInBottomRight"
+      // Flippers
+      35: "flip"
+      36: "flipInX"
+      37: "flipInY"
+      // Lightspeed
+      38: "lightSpeedInRight"
+      39: "lightSpeedInLeft"
+      // Rotating entrances
+      40: "rotateIn"
+      41: "rotateInDownLeft"
+      42: "rotateInDownRight"
+      43: "rotateInUpLeft"
+      44: "rotateInUpRight"
+      // Specials
+      45: "jackInTheBox"
+      46: "rollIn"
+      // Zooming entrances
+      47: "zoomIn"
+      48: "zoomInDown"
+      49: "zoomInLeft"
+      50: "zoomInRight"
+      51: "zoomInUp"
+      // Sliding entrances
+      52: "slideInDown"
+      53: "slideInLeft"
+      54: "slideInRight"
+      55: "slideInUp"
+```
 
-- Help! My module is (above/below) another module in the same region but I want
-  it to be somewhere else!
+Just check [animate.css](https://animate.style/) and find for prefered animation your module !<br>
+Report number in accord of the animation name like in configuration sample
 
-  The order of your `config.js` determines your module location. If you have two
-  modules, both with `position:bottom_bar`, the one that is first listed will
-  appear on top. The rest will appear in the same order you defined them in. If
-  you want this module to be at the very bottom, define this module as the last
-  module in your `config.js` file. If you want it to be on top in that region,
-  make sure no other module is defined before it that has the same region.
-
-- Can I make a pull request?
-
-  Please do! Feel free; I love improvements!
-
-- I want more config options!
-
-  Please make an issue. Thanks!
-
-[example_url]: https://www.youtube.com/watch?v=1NQ-sGtdUdg
-[mm]: https://github.com/MichMich/MagicMirror
-[page indicator]: https://github.com/edward-shen/MMM-page-indicator
+### Credits
+ * [@edward-shen](https://github.com/edward-shen) for [MMM-pages](https://github.com/edward-shen/MMM-pages) and [MMM-page-indicator](https://github.com/edward-shen/MMM-page-indicator)
+ * @bugsounet (for bug hunts and renew/review coding!)
