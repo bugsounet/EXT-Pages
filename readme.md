@@ -1,4 +1,4 @@
-# Ext-Pages (aska MMM-pages v2)
+# EXT-Pages (aska MMM-pages v2)
 
 This [MagicMirror²][mm²] Module allows you to have animated pages in your magic mirror!<br>
 Want to have more modules in your magic mirror, but want to keep the format?<br>
