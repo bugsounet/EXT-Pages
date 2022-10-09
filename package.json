@@ -3,7 +3,7 @@
   "version": "1.0.0",
   "rev": "221007",
   "description": "allows you to have pages in your magic mirror",
-  "main": "EXT-Alert.js",
+  "main": "EXT-Pages.js",
   "scripts": {
     "preinstall": "installer/preinstall.sh",
     "postinstall": "installer/postinstall.sh",
