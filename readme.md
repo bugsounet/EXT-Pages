@@ -119,7 +119,7 @@ index of 1, and the page to the right of that has an index of 2. Thus, to change
 to the third page, your module should send out:
 
 ```js
-this.sendNotification("PAGE_CHANGED", 2);
+this.sendNotification("EXT_PAGES-CHANGED", 2);
 ```
 This module keeps internal track of how many pages you have, defined by your
 config in the config file. There is no way to dynamically change the pages you
