@@ -19,7 +19,7 @@ Module.register('EXT-Pages', {
     indicator: true,
     activeBright: false,
     inactiveDimmed: true,
-    inactiveHollow: true,
+    inactiveHollow: true
   },
 
   /**
@@ -136,7 +136,7 @@ Module.register('EXT-Pages', {
       55: "slideInUp"
     }
   },
- 
+
   getDom: function() {
     const wrapper = document.createElement('div')
     if (!this.config.indicator) {
@@ -165,13 +165,8 @@ Module.register('EXT-Pages', {
       }
       wrapper.appendChild(circle)
 
-      // Lets people change the page by clicking on the respective circle.
-      // So apparently this doesn't work if we don't call the last two methods,
-      // despite those methods being called in when calling sendNotification.
-      // This is likely a bug (because spamming a single button) causes rapid-
-      // fire page changing, but for most cases that shouldn't be a problem.
       circle.onclick = () => {
-        this.notificationReceived('PAGE_CHANGED', i)
+        this.notificationReceived('EXT_PAGES-CHANGED', i)
         this.curPage = i
       }
     }
@@ -181,17 +176,17 @@ Module.register('EXT-Pages', {
 
   /**
    * Handles incoming notifications. Responds to the following:
-   *   'PAGE_CHANGED' - Set the page to the specified payload page.
-   *   'PAGE_INCREMENT' - Move to the next page.
-   *   'PAGE_DECREMENT' - Move to the previous page.
    *   'DOM_OBJECTS_CREATED' - Starts the module.
-   *   'QUERY_PAGE_NUMBER' - Requests the current page number
-   *   'PAUSE_ROTATION' - Stops rotation
-   *   'RESUME_ROTATION' - Resumes rotation
-   *   'HOME_PAGE' - Calls PAGED_CHANGED with the default home page.
-   *   'SHOW_HIDDEN_PAGE' - Shows the (in the payload) specified hidden
+   *   'EXT_PAGES-CHANGED' - Set the page to the specified payload page.
+   *   'EXT_PAGES-INCREMENT' - Move to the next page.
+   *   'EXT_PAGES-DECREMENT' - Move to the previous page.
+   *   'EXT_PAGES-NUMBER' - Requests the current page number and total pages created
+   *   'EXT_PAGES-PAUSE' - Stops rotation
+   *   'EXT_PAGES-RESUME' - Resumes rotation
+   *   'EXT_PAGES-HOME' - Calls EXT_PAGES-CHANGED with the default home page.
+   *   'EXT_PAGES-HIDDEN_SHOW' - Shows the (in the payload) specified hidden
    *                        page by name
-   *   'LEAVE_HIDDEN_PAGE' - Hides the currently showing hidden page and
+   *   'EXT_PAGES-HIDDEN_LEAVE' - Hides the currently showing hidden page and
    *                         resumes showing the last page
    *
    * @param {string} notification the notification ID
@@ -201,12 +196,30 @@ Module.register('EXT-Pages', {
     switch (notification) {
       case 'DOM_OBJECTS_CREATED':
         Log.log('[Pages]: received that all objects are created; will now hide things!')
-        this.sendNotification('NEW_PAGE', this.curPage)
+        this.sendNotification('EXT-PAGES_NUMBER_IS', {
+			    Actual: this.curPage,
+          Total: Object.keys(this.config.pages).length
+        })
         this.animatePageChange()
         this.resetTimerWithDelay(0)
         break
-      case 'PAGE_CHANGED':
+      case 'EXT_PAGES-CHANGED':
         Log.log(`[Pages]: received a notification to change to page ${payload} of type ${typeof payload}`)
+        if (!payload) payload = 0
+        if (payload && isNaN(payload)) {
+          this.sendNotification("EXT_ALERT", {
+            message: "Error: EXT_PAGES-CHANGED must have an number value",
+            type: "error"
+          })
+          return
+        }
+        payload = parseInt(payload)
+        if (payload >= Object.keys(this.config.pages).length || payload < 0) {
+          return this.sendNotification("EXT_ALERT", {
+            message: "Error: This page don't exist: " + payload,
+            type: "error"
+          })
+        }
         this.curPage = payload
         if (this.isInHiddenPage) {
           this.isInHiddenPage= false
@@ -214,39 +227,45 @@ Module.register('EXT-Pages', {
         }
         this.updatePages()
         break
-      case 'PAGE_INCREMENT':
+      case 'EXT_PAGES-INCREMENT':
         Log.log('[Pages]: received a notification to increment pages!')
         this.changePageBy(payload, 1)
         this.updatePages()
         break
-      case 'PAGE_DECREMENT':
+      case 'EXT_PAGES-DECREMENT':
         Log.log('[Pages]: received a notification to decrement pages!')
         // We can't just pass in -payload for situations where payload is null
         // JS will coerce -payload to -0.
         this.changePageBy(payload ? -payload : payload, -1)
         this.updatePages()
         break
-      case 'QUERY_PAGE_NUMBER':
-        this.sendNotification('PAGE_NUMBER_IS', this.curPage)
+      case 'EXT_PAGES-NUMBER':
+        this.sendNotification('EXT-PAGES_NUMBER_IS', {
+			    Actual: this.curPage,
+          Total: Object.keys(this.config.pages).length
+        })
         break
-      case 'PAUSE_ROTATION':
+      case 'EXT_PAGES-PAUSE':
         this.setRotation(false)
         break
-      case 'RESUME_ROTATION':
+      case 'EXT_PAGES-RESUME':
         this.setRotation(true)
         break
-      case 'HOME_PAGE':
-        this.notificationReceived('PAGE_CHANGED', this.config.homePage)
+      case 'EXT_PAGES-HOME':
+        this.notificationReceived('EXT_PAGES-CHANGED', this.config.homePage)
         break
-      case 'SHOW_HIDDEN_PAGE':
+      case 'EXT_PAGES-HIDDEN_SHOW':
         Log.log(`[Pages]: received a notification to change to the hidden page "${payload}" of type "${typeof payload}"`)
         this.setRotation(false)
         this.showHiddenPage(payload)
         break
-      case 'LEAVE_HIDDEN_PAGE':
+      case 'EXT_PAGES-HIDDEN_LEAVE':
         Log.log("[Pages]: received a notification to leave the current hidden page ")
         this.animatePageChange()
         this.setRotation(true)
+        break
+      case "GAv4_READY":
+        this.sendNotification("EXT_HELLO", this.name)
         break
       default: // Do nothing
     }
@@ -289,8 +308,17 @@ Module.register('EXT-Pages', {
     if (Object.keys(this.config.pages).length !== 0) {
       this.animatePageChange()
       if (!this.rotationPaused) this.resetTimerWithDelay(0)
-      this.sendNotification('NEW_PAGE', this.curPage)
-    } else Log.error("[Pages]: Pages aren't properly defined!")
+      this.sendNotification('EXT-PAGES_NUMBER_IS', {
+			  Actual: this.curPage,
+        Total: Object.keys(this.config.pages).length
+      })
+    } else {
+      this.sendNotification("EXT_ALERT", {
+        message: "Error: Pages aren't properly defined!",
+        type: "error"
+      })
+      Log.error("[Pages]: Pages aren't properly defined!")
+    }
   },
 
   /**
@@ -324,7 +352,7 @@ Module.register('EXT-Pages', {
     }
 
     const animationTime = this.config.animationTime / 2
-    
+
     MM.getModules()
       .exceptModule(this)
       .exceptWithClass(modulesToShow)
@@ -363,7 +391,7 @@ Module.register('EXT-Pages', {
 
       this.delayTimer = setTimeout(() => {
         this.timer = setInterval(() => {
-          this.notificationReceived('PAGE_INCREMENT')
+          this.notificationReceived('EXT_PAGES-INCREMENT')
         }, this.config.rotationTime)
       }, delay)
     } else if (this.config.rotationHomePage > 0) {
@@ -374,7 +402,7 @@ Module.register('EXT-Pages', {
 
       this.delayTimer = setTimeout(() => {
         this.timer = setInterval(() => {
-          this.notificationReceived('PAGE_CHANGED', this.config.homePage)
+          this.notificationReceived('EXT_PAGES-CHANGED', this.config.homePage)
         }, this.config.rotationHomePage)
       }, delay)
     }
@@ -416,6 +444,10 @@ Module.register('EXT-Pages', {
       this.animatePageChange(name)
     } else {
       Log.error(`[Pages] Hidden page "${name}" does not exist!`)
+      this.sendNotification("EXT_ALERT", {
+        message: `Error: Hidden page "${name}" does not exist!`,
+        type: "error"
+      })
     }
   },
 
@@ -429,14 +461,14 @@ Module.register('EXT-Pages', {
       const node = document.getElementById(element)
       node.style.setProperty("--animate-duration", (this.config.animationTime/1000)+"s")
       node.classList.add(`${this.animatePrefix}animated`, animationName)
-  
+
       // When the animation ends, we clean the classes and resolve the Promise
       function handleAnimationEnd(event) {
         event.stopPropagation()
         node.classList.remove(`${this.animatePrefix}animated`, animationName)
         resolve('Animation ended')
       }
-  
+
       node.addEventListener('animationend', handleAnimationEnd, {once: true})
     })
   },
@@ -446,7 +478,10 @@ Module.register('EXT-Pages', {
       for (let i = 0; i < Object.keys(this.config.pages).length; i += 1) {
         if (!this.config.pages[i]) {
           Log.error("[Pages] Page " + i + " is undefined")
-          // send EXT-Alert error
+          this.sendNotification("EXT_ALERT", {
+            message: "Error: Page " + i + " is undefined",
+            type: "error"
+          })
         }
       }
     }
@@ -466,16 +501,16 @@ Module.register('EXT-Pages', {
       })
     }
   },
-  
+
   tbPages: function(command, handler) {
     if (handler.args) {
       var args = handler.args.split(" ")
       if (args[0] && !isNaN(args[0])) {
-        if (args[0] > Object.keys(this.config.pages).length) {
+        if (args[0] >= Object.keys(this.config.pages).length) {
           return handler.reply("TEXT", "Page not found: " + args[0])
         }
         handler.reply("TEXT", "Change page number to " + args[0])
-        return this.notificationReceived("PAGE_CHANGED", parseInt(args[0]))
+        return this.notificationReceived("EXT_PAGES-CHANGED", parseInt(args[0]))
       } else {
         return handler.reply("TEXT", "invalid number page!")
       }
@@ -488,7 +523,7 @@ Module.register('EXT-Pages', {
       var args = handler.args.split(" ")
       if (args[0] && args[0] in this.config.hiddenPages) {
         handler.reply("TEXT", "Change to hidden page: " + args[0])
-        return this.notificationReceived("SHOW_HIDDEN_PAGE", args[0])
+        return this.notificationReceived("EXT_PAGES-HIDDEN_SHOW", args[0])
       } else {
         return handler.reply("TEXT", "invalid hidden page name!")
       }
