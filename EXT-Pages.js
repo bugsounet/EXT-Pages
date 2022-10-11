@@ -19,7 +19,8 @@ Module.register('EXT-Pages', {
     indicator: true,
     activeBright: false,
     inactiveDimmed: true,
-    inactiveHollow: true
+    inactiveHollow: true,
+    Gateway: {}
   },
 
   /**
@@ -56,6 +57,7 @@ Module.register('EXT-Pages', {
     this.curPage = this.config.homePage
     this.rotationPaused = false
     this.isInHiddenPage= false
+    this.locked = false
 
     // Disable rotation if an invalid input is given
     this.config.rotationTime = Math.max(this.config.rotationTime, 0)
@@ -167,7 +169,7 @@ Module.register('EXT-Pages', {
 
       circle.onclick = () => {
         this.notificationReceived('EXT_PAGES-CHANGED', i)
-        this.curPage = i
+        if (!this.locked) this.curPage = i
       }
     }
 
@@ -192,7 +194,7 @@ Module.register('EXT-Pages', {
    * @param {string} notification the notification ID
    * @param {number|string} payload the page to change to/by
    */
-  notificationReceived: function (notification, payload) {
+  notificationReceived: function (notification, payload, sender) {
     switch (notification) {
       case 'DOM_OBJECTS_CREATED':
         Log.log('[Pages]: received that all objects are created; will now hide things!')
@@ -205,6 +207,14 @@ Module.register('EXT-Pages', {
         break
       case 'EXT_PAGES-CHANGED':
         Log.log(`[Pages]: received a notification to change to page ${payload} of type ${typeof payload}`)
+
+        if (this.locked && (!sender || sender.name != "Gateway")) {
+          this.sendNotification("EXT_ALERT", {
+            message: "Error: EXT-PAGES is locked by Gateway!",
+            type: "error"
+          })
+          return
+        }
         if (!payload) payload = 0
         if (payload && isNaN(payload)) {
           this.sendNotification("EXT_ALERT", {
@@ -227,12 +237,29 @@ Module.register('EXT-Pages', {
         }
         this.updatePages()
         break
+      case "EXT_PAGES-LOCK":
+        if (sender.name == "Gateway") {
+          if (this.locked) return
+          Log.log('[Pages]: received a lock notification!')
+          this.setRotation(false)
+          this.locked = true
+        }
+        break
+      case "EXT_PAGES-UNLOCK":
+        if (sender.name == "Gateway") { // unforce anyway
+          Log.log('[Pages]: received an unlock notification!')
+          this.setRotation(true)
+          this.locked = false
+        }
+        break
       case 'EXT_PAGES-INCREMENT':
+        if (this.locked) return
         Log.log('[Pages]: received a notification to increment pages!')
         this.changePageBy(payload, 1)
         this.updatePages()
         break
       case 'EXT_PAGES-DECREMENT':
+        if (this.locked) return
         Log.log('[Pages]: received a notification to decrement pages!')
         // We can't just pass in -payload for situations where payload is null
         // JS will coerce -payload to -0.
@@ -246,9 +273,11 @@ Module.register('EXT-Pages', {
         })
         break
       case 'EXT_PAGES-PAUSE':
+        if (this.locked) return
         this.setRotation(false)
         break
       case 'EXT_PAGES-RESUME':
+        if (this.locked) return
         this.setRotation(true)
         break
       case 'EXT_PAGES-HOME':
@@ -256,16 +285,21 @@ Module.register('EXT-Pages', {
         break
       case 'EXT_PAGES-HIDDEN_SHOW':
         Log.log(`[Pages]: received a notification to change to the hidden page "${payload}" of type "${typeof payload}"`)
+        if (this.locked) return
         this.setRotation(false)
         this.showHiddenPage(payload)
         break
       case 'EXT_PAGES-HIDDEN_LEAVE':
         Log.log("[Pages]: received a notification to leave the current hidden page ")
+        if (this.locked) return
         this.animatePageChange()
         this.setRotation(true)
         break
       case "GAv4_READY":
         this.sendNotification("EXT_HELLO", this.name)
+        break
+      case "EXT_PAGES-Gateway":
+        if (sender.name == "Gateway") this.sendNotification("EXT_PAGES-Gateway", this.config.Gateway)
         break
       default: // Do nothing
     }

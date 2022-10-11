@@ -56,7 +56,8 @@ Note: module names used in the following example are fictitious.
       "weather": 37
     },
     indicator: true,
-    rotationTime: 15000
+    rotationTime: 15000,
+    Gateway: {}
   }
 },
 
@@ -80,6 +81,23 @@ Note: module names used in the following example are fictitious.
 | `activeBright`      | `bool`                     | `false`                  | Should the active circle be bright ? (only if indicator activated)|
 | `inactiveDimmed`	  | `bool`                     | `true`                   | Should the inactive circles be dimmed? (only if indicator activated)|
 | `inactiveHollow`	  | `bool`                     | `true`                   | Should the inactive circles be hollow? (only if indicator activated)|
+| `Gateway`           | `{String of plugins name: Number,... }` | `{}`        | Gateway rules for displaying plugins page automaticaly |
+
+Gateway Rules sample:
+```
+Gateway: {
+  "EXT-Spotify": 1,
+  "EXT-YouTube": 4,
+  "EXT-MusicPlayer": 6,
+  "EXT-RadioPlayer": 5
+}
+```
+Gateway will search in this config what page displayed if a plugin is used.
+Just inform the name of the plugin and associed page
+
+It's only needed if you use module position (not on fullscreen)
+So if you use Fullscreen mode, it's not necessary to inform this part and Gateway will just pause rotating inside of change page
+
 
 ## Notifications
 
