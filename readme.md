@@ -13,7 +13,7 @@ one yourself!
 Naturally, you can use it as a single module and without `MMM-GoogleAssistant`
 
 ### Installation, update & Guides
-Read the docs in [wiki](https://wiki.bugsounet.fr)
+Read the docs in [wiki]([https://wiki.bugsounet.fr](https://wiki.bugsounet.fr/en/EXT-Pages))
 
 ### Credits
  * [@edward-shen](https://github.com/edward-shen) for [MMM-pages](https://github.com/edward-shen/MMM-pages) and [MMM-page-indicator](https://github.com/edward-shen/MMM-page-indicator)
