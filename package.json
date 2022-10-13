@@ -1,0 +1,30 @@
+{
+  "name": "EXT-Pages",
+  "version": "1.0.0",
+  "rev": "221010",
+  "description": "allows you to have pages in your magic mirror",
+  "main": "EXT-Pages.js",
+  "scripts": {
+    "preinstall": "installer/preinstall.sh",
+    "postinstall": "installer/postinstall.sh",
+    "update": "installer/update.sh"
+  },
+  "keywords": [
+    "magic mirror",
+    "module",
+    "pages"
+  ],
+  "author": [
+    "edward-shen",
+    "bugsounet"
+  ],
+  "license": "MIT",
+  "bugs": {
+    "url": "https://forum.bugsounet.fr"
+  },
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/bugsounet/EXT-Pages"
+  },
+  "homepage": "https://wiki.bugsounet.fr/en/EXT-Pages"
+}
