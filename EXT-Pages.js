@@ -10,6 +10,7 @@ Module.register('EXT-Pages', {
     pages: {},
     fixed: [],
     hiddenPages: {},
+    rotationTimers: {},
     animationTime: 1000,
     rotationTime: 0,
     rotationHomePage: 0,
@@ -63,6 +64,13 @@ Module.register('EXT-Pages', {
     this.config.rotationTime = Math.max(this.config.rotationTime, 0)
     this.config.rotationDelay = Math.max(this.config.rotationDelay, 0)
     this.config.rotationHomePage = Math.max(this.config.rotationHomePage, 0)
+    /*
+    if (Object.keys(this.config.rotationTimers).length) {
+      for (let i = 0; i < Object.keys(this.config.pages).length; i += 1) {
+        // check if value is a number  
+      }
+    }
+    */
 
     if (!this.config.useLockString) {
       Log.log('[Pages]: User opted to not use lock strings!')
@@ -199,7 +207,7 @@ Module.register('EXT-Pages', {
       case 'DOM_OBJECTS_CREATED':
         Log.log('[Pages]: received that all objects are created; will now hide things!')
         this.sendNotification('EXT-PAGES_NUMBER_IS', {
-			    Actual: this.curPage,
+          Actual: this.curPage,
           Total: Object.keys(this.config.pages).length
         })
         this.animatePageChange()
@@ -255,12 +263,20 @@ Module.register('EXT-Pages', {
       case 'EXT_PAGES-INCREMENT':
         if (this.locked) return
         Log.log('[Pages]: received a notification to increment pages!')
+        if (this.isInHiddenPage) {
+          this.isInHiddenPage= false
+          this.setRotation(true)
+        }
         this.changePageBy(payload, 1)
         this.updatePages()
         break
       case 'EXT_PAGES-DECREMENT':
         if (this.locked) return
         Log.log('[Pages]: received a notification to decrement pages!')
+        if (this.isInHiddenPage) {
+          this.isInHiddenPage= false
+          this.setRotation(true)
+        }
         // We can't just pass in -payload for situations where payload is null
         // JS will coerce -payload to -0.
         this.changePageBy(payload ? -payload : payload, -1)
@@ -268,7 +284,7 @@ Module.register('EXT-Pages', {
         break
       case 'EXT_PAGES-NUMBER':
         this.sendNotification('EXT-PAGES_NUMBER_IS', {
-			    Actual: this.curPage,
+          Actual: this.curPage,
           Total: Object.keys(this.config.pages).length
         })
         break
@@ -292,8 +308,11 @@ Module.register('EXT-Pages', {
       case 'EXT_PAGES-HIDDEN_LEAVE':
         Log.log("[Pages]: received a notification to leave the current hidden page ")
         if (this.locked) return
+        if (this.isInHiddenPage) {
+          this.isInHiddenPage= false
+          this.setRotation(true)
+        }
         this.animatePageChange()
-        this.setRotation(true)
         break
       case "GAv4_READY":
         this.sendNotification("EXT_HELLO", this.name)
@@ -343,7 +362,7 @@ Module.register('EXT-Pages', {
       this.animatePageChange()
       if (!this.rotationPaused) this.resetTimerWithDelay(0)
       this.sendNotification('EXT-PAGES_NUMBER_IS', {
-			  Actual: this.curPage,
+        Actual: this.curPage,
         Total: Object.keys(this.config.pages).length
       })
     } else {
