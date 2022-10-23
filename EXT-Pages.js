@@ -52,7 +52,6 @@ Module.register('EXT-Pages', {
       this.config.homePage = 0
     }
     this.checkPagesConfig()
-    if (this.config.animates) this.config.animatesIn = this.config.animates
     this.curPage = this.config.homePage
     this.rotationPaused = false
     this.isInHiddenPage= false
@@ -68,7 +67,7 @@ Module.register('EXT-Pages', {
       }
     }
 
-    this.animateStyleIn= {
+    this.animateStyle= {
       // Attention seekers
       1: "bounce",
       2: "flash",
@@ -134,60 +133,6 @@ Module.register('EXT-Pages', {
       53: "slideInLeft",
       54: "slideInRight",
       55: "slideInUp"
-    },
-
-    this.animateStyleOut= {
-      // Back exits
-      1: "backOutDown",
-      2: "backOutLeft",
-      3: "backOutRight",
-      4: "backOutUp",
-      // Bouncing exits
-      5: "bounceOut",
-      6: "bounceOutDown",
-      7: "bounceOutLeft",
-      8: "bounceOutRight",
-      9: "bounceOutUp",
-      // Fading exits
-      10: "fadeOut",
-      11: "fadeOutDown",
-      12: "fadeOutDownBig",
-      13: "fadeOutLeft",
-      14: "fadeOutLeftBig",
-      15: "fadeOutRight",
-      16: "fadeOutRightBig",
-      17: "fadeOutUp",
-      18: "fadeOutUpBig",
-      19: "fadeOutTopLeft",
-      20: "fadeOutTopRight",
-      21: "fadeOutBottomRight",
-      22: "fadeOutBottomLeft",
-      // Flippers
-      23: "flipOutX",
-      24: "flipOutY",
-      // Lightspeed
-      25: "lightSpeedOutRight",
-      26: "lightSpeedOutLeft",
-      // Rotating exits
-      27: "rotateOut",
-      28: "rotateOutDownLeft",
-      29: "rotateOutDownRight",
-      30: "rotateOutUpLeft",
-      31: "rotateOutUpRight",
-      // Specials
-      32: "hinge",
-      33: "rollOut",
-      // Zooming exits
-      34: "zoomOut",
-      35: "zoomOutDown",
-      36: "zoomOutLeft",
-      37: "zoomOutRight",
-      38: "zoomOutUp",
-      // Sliding exits
-      39: "slideOutDown",
-      40: "slideOutLeft",
-      41: "slideOutRight",
-      42: "slideOutUp"
     }
   },
 
@@ -440,10 +385,7 @@ Module.register('EXT-Pages', {
       .exceptWithClass(modulesToShow)
       .enumerate(module => {
         if (!module.hidden) {
-          if (this.config.animatesOut[module.name] && this.animateStyleOut[this.config.animatesOut[module.name]]) {
-            this.animateCSS(module.identifier, this.animateStyleOut[this.config.animatesOut[module.name]]).then(module.hide(this.config.animationTime+200, lockStringObj))
-          }
-          else module.hide(animationTime, lockStringObj)
+          module.hide(animationTime, lockStringObj)
         }
       })
 
@@ -454,13 +396,13 @@ Module.register('EXT-Pages', {
         .withClass(modulesToShow)
         .enumerate(module => {
           if (module.hidden) {
-            if (this.config.animatesIn[module.name] && this.animateStyleIn[this.config.animatesIn[module.name]]) {
-              this.animateCSS(module.identifier, this.animateStyleIn[this.config.animatesIn[module.name]]).then(module.show(0, lockStringObj))
+            if (this.config.animates[module.name] && this.animateStyle[this.config.animates[module.name]]) {
+              this.animateCSS(module.identifier, this.animateStyle[this.config.animates[module.name]]).then(module.show(0, lockStringObj))
             }
             else module.show(animationTime, lockStringObj)
           }
         })
-    }, this.config.animationTime+500)
+    }, this.config.animationTime)
     if (this.config.indicator) this.updateDom()
   },
 
@@ -544,7 +486,7 @@ Module.register('EXT-Pages', {
 
       // When the animation ends, we clean the classes and resolve the Promise
       function handleAnimationEnd(event) {
-        node.classList.remove(animationName)
+        node.classList.remove("animate__animated", animationName)
         event.stopPropagation()
         resolve('Animation ended')
       }
