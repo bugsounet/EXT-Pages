@@ -6,8 +6,7 @@ Module.register('EXT-Pages', {
    * sister module. We also don't rotate out modules by default.
    */
   defaults: {
-    animatesIn: {},
-    animatesOut: {},
+    animates: {},
     pages: {},
     fixed: [],
     hiddenPages: {},
