@@ -10,17 +10,12 @@ Module.register('EXT-Pages', {
     pages: {},
     fixed: [],
     hiddenPages: {},
-    rotationTimers: {},
+    rotationTimes: {},
     animationTime: 1000,
     rotationTime: 0,
     rotationHomePage: 0,
-    rotationDelay: 10000,
     homePage: 0,
-    useLockString: true,
     indicator: true,
-    activeBright: false,
-    inactiveDimmed: true,
-    inactiveHollow: true,
     Gateway: {}
   },
 
@@ -51,6 +46,7 @@ Module.register('EXT-Pages', {
    */
   start: function () {
     // Clamp homePage value to [0, num pages).
+    this.timer = null
     if (this.config.homePage >= Object.keys(this.config.pages).length || this.config.homePage < 0) {
       this.config.homePage = 0
     }
@@ -62,21 +58,13 @@ Module.register('EXT-Pages', {
 
     // Disable rotation if an invalid input is given
     this.config.rotationTime = Math.max(this.config.rotationTime, 0)
-    this.config.rotationDelay = Math.max(this.config.rotationDelay, 0)
     this.config.rotationHomePage = Math.max(this.config.rotationHomePage, 0)
-    /*
-    if (Object.keys(this.config.rotationTimers).length) {
-      for (let i = 0; i < Object.keys(this.config.pages).length; i += 1) {
-        // check if value is a number  
+
+    if (Object.keys(this.config.rotationTimes).length) {
+      for (let i = 0; i < Object.keys(this.config.rotationTimes).length; i += 1) {
+        this.config.rotationTimes[i]= Math.max(this.config.rotationTimes[i], 0)
       }
     }
-    */
-
-    if (!this.config.useLockString) {
-      Log.log('[Pages]: User opted to not use lock strings!')
-    }
-
-    this.animatePrefix = "animate__"
 
     this.animateStyle= {
       // Attention seekers
@@ -156,22 +144,9 @@ Module.register('EXT-Pages', {
     for (let i = 0; i < Object.keys(this.config.pages).length; i += 1) {
       const circle = document.createElement('i')
       if (this.curPage === i && !this.isInHiddenPage) {
-        circle.className = 'fa fa-circle indicator'
-        if (this.config.activeBright) {
-          circle.className += ' bright'
-        }
+        circle.className = 'fa fa-circle indicator bright'
       } else {
-        circle.className = 'fa indicator'
-
-        if (this.config.inactiveDimmed) {
-          circle.className += ' dimmed'
-        }
-
-        if (this.config.inactiveHollow) {
-          circle.className += ' fa-circle-thin'
-        } else {
-          circle.className += ' fa-circle'
-        }
+        circle.className = 'fa fa-circle-thin indicator dimmed'
       }
       wrapper.appendChild(circle)
 
@@ -384,11 +359,6 @@ Module.register('EXT-Pages', {
    */
   animatePageChange: function (targetPageName) {
     let lockStringObj = { lockString: "EXT-Pages-Locked" }
-    if (!this.config.useLockString) {
-      // Passing in an undefined object is equivalent to not passing it in at
-      // all, effectively providing only one arg to the hide and show calls
-      lockStringObj = undefined
-    }
 
     // Hides all modules not on the current page. This hides any module not
     // meant to be shown.
@@ -398,7 +368,10 @@ Module.register('EXT-Pages', {
       modulesToShow = this.config.hiddenPages[targetPageName]
     } else {
       if (!this.config.pages[this.curPage]) {
-        // @todo: send EXT-Alert
+        this.sendNotification("EXT_ALERT", {
+          message: "Error: Page " + this.curPage + " not found!",
+          type: "error"
+        })
         modulesToShow = this.config.fixed
       }
       else modulesToShow = this.config.fixed.concat(this.config.pages[this.curPage])
@@ -410,8 +383,12 @@ Module.register('EXT-Pages', {
       .exceptModule(this)
       .exceptWithClass(modulesToShow)
       .enumerate(module => {
-        if (!module.hidden) module.hide(animationTime, lockStringObj)
+        if (!module.hidden) {
+          module.hide(animationTime, lockStringObj)
+        }
       })
+
+    if (this.config.indicator) this.updateDom()
 
     // Shows all modules meant to be on the current page, after a small delay.
     setTimeout(() => {
@@ -426,8 +403,7 @@ Module.register('EXT-Pages', {
             else module.show(animationTime, lockStringObj)
           }
         })
-    }, animationTime)
-    if (this.config.indicator) this.updateDom()
+    }, this.config.animationTime)
   },
 
   /**
@@ -436,28 +412,21 @@ Module.register('EXT-Pages', {
    * @param {number} delay the delay, in milliseconds.
    */
   resetTimerWithDelay: function (delay) {
-    if (this.config.rotationTime > 0) {
+    let rotationTime = this.config.rotationTimes[this.curPage] ? this.config.rotationTimes[this.curPage] : this.config.rotationTime
+    if (rotationTime > 0) {
       // This timer is the auto rotate function.
       clearInterval(this.timer)
-      // This is delay timer after manually updating.
-      clearTimeout(this.delayTimer)
 
-      this.delayTimer = setTimeout(() => {
-        this.timer = setInterval(() => {
-          this.notificationReceived('EXT_PAGES-INCREMENT')
-        }, this.config.rotationTime)
-      }, delay)
+      this.timer = setInterval(() => {
+        this.notificationReceived('EXT_PAGES-INCREMENT')
+      }, rotationTime+this.config.animationTime)
     } else if (this.config.rotationHomePage > 0) {
       // This timer is the auto rotate function.
       clearInterval(this.timer)
-      // This is delay timer after manually updating.
-      clearTimeout(this.delayTimer)
 
-      this.delayTimer = setTimeout(() => {
-        this.timer = setInterval(() => {
-          this.notificationReceived('EXT_PAGES-CHANGED', this.config.homePage)
-        }, this.config.rotationHomePage)
-      }, delay)
+      this.timer = setInterval(() => {
+        this.notificationReceived('EXT_PAGES-CHANGED', this.config.homePage)
+      }, this.config.rotationHomePage)
     }
   },
 
@@ -477,9 +446,8 @@ Module.register('EXT-Pages', {
       Log.log(`[Pages]: ${stateBaseString}ing rotation`)
       if (!isRotating) {
         clearInterval(this.timer)
-        clearTimeout(this.delayTimer)
       } else {
-        this.resetTimerWithDelay(this.rotationDelay)
+        this.resetTimerWithDelay()
       }
       this.rotationPaused = !isRotating
     }
@@ -510,15 +478,16 @@ Module.register('EXT-Pages', {
   animateCSS: function (element, animation) {
     // We create a Promise and return it
     return new Promise((resolve, reject) => {
-      const animationName = this.animatePrefix+animation
+      const animationName = "animate__"+animation
       const node = document.getElementById(element)
+      if (!node) return Log.warn(`[Pages] node not found for`, element)
       node.style.setProperty("--animate-duration", (this.config.animationTime/1000)+"s")
-      node.classList.add(`${this.animatePrefix}animated`, animationName)
+      node.classList.add("animate__animated", animationName)
 
       // When the animation ends, we clean the classes and resolve the Promise
       function handleAnimationEnd(event) {
+        node.classList.remove("animate__animated", animationName)
         event.stopPropagation()
-        node.classList.remove(`${this.animatePrefix}animated`, animationName)
         resolve('Animation ended')
       }
 
