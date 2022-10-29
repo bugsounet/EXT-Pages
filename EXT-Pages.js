@@ -388,6 +388,8 @@ Module.register('EXT-Pages', {
         }
       })
 
+    if (this.config.indicator) this.updateDom()
+
     // Shows all modules meant to be on the current page, after a small delay.
     setTimeout(() => {
       MM.getModules()
@@ -402,7 +404,6 @@ Module.register('EXT-Pages', {
           }
         })
     }, this.config.animationTime)
-    if (this.config.indicator) this.updateDom()
   },
 
   /**
