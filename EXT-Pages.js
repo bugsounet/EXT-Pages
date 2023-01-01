@@ -291,6 +291,10 @@ Module.register('EXT-Pages', {
         break
       case "GAv4_READY":
         this.sendNotification("EXT_HELLO", this.name)
+        this.sendNotification('EXT_PAGES-NUMBER_IS', {
+          Actual: this.curPage,
+          Total: Object.keys(this.config.pages).length
+        })
         break
       case "EXT_PAGES-Gateway":
         if (sender.name == "Gateway") this.sendNotification("EXT_PAGES-Gateway", this.config.Gateway)
@@ -336,7 +340,7 @@ Module.register('EXT-Pages', {
     if (Object.keys(this.config.pages).length !== 0) {
       this.animatePageChange()
       if (!this.rotationPaused) this.resetTimerWithDelay(0)
-      this.sendNotification('EXT-PAGES_NUMBER_IS', {
+      this.sendNotification('EXT_PAGES-NUMBER_IS', {
         Actual: this.curPage,
         Total: Object.keys(this.config.pages).length
       })
