@@ -1,7 +1,7 @@
 {
   "name": "EXT-Pages",
-  "version": "1.1.1",
-  "rev": "230101",
+  "version": "1.1.2",
+  "rev": "230129",
   "description": "allows you to have pages in your magic mirror",
   "main": "EXT-Pages.js",
   "scripts": {

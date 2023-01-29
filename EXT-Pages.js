@@ -1,11 +1,11 @@
 Module.register('EXT-Pages', {
-
   /**
    * By default, we have don't pseudo-paginate any modules. We also exclude
    * the page indicator by default, in case people actually want to use the
    * sister module. We also don't rotate out modules by default.
    */
   defaults: {
+    debug: false,
     animates: {},
     pages: {},
     fixed: [],
@@ -45,8 +45,10 @@ Module.register('EXT-Pages', {
    * and sets the default current page to 0.
    */
   start: function () {
-    // Clamp homePage value to [0, num pages).
+    logPages = (...args) => { /* do nothing */ }
+    if (this.config.debug) logPages = (...args) => { console.log("[PAGES]", ...args) }
     this.timer = null
+    // Clamp homePage value to [0, num pages).
     if (this.config.homePage >= Object.keys(this.config.pages).length || this.config.homePage < 0) {
       this.config.homePage = 0
     }
@@ -189,7 +191,7 @@ Module.register('EXT-Pages', {
         this.resetTimerWithDelay(0)
         break
       case 'EXT_PAGES-CHANGED':
-        Log.log(`[Pages]: received a notification to change to page ${payload} of type ${typeof payload}`)
+        logPages(`Received a notification to change to page ${payload}`)
 
         if (this.locked && (!sender || sender.name != "Gateway")) {
           this.sendNotification("EXT_ALERT", {
@@ -223,21 +225,21 @@ Module.register('EXT-Pages', {
       case "EXT_PAGES-LOCK":
         if (sender.name == "Gateway") {
           if (this.locked) return
-          Log.log('[Pages]: received a lock notification!')
+          logPages('Received a lock notification!')
           this.setRotation(false)
           this.locked = true
         }
         break
       case "EXT_PAGES-UNLOCK":
         if (sender.name == "Gateway") { // unforce anyway
-          Log.log('[Pages]: received an unlock notification!')
+          logPages('Received an unlock notification!')
           this.setRotation(true)
           this.locked = false
         }
         break
       case 'EXT_PAGES-INCREMENT':
         if (this.locked) return
-        Log.log('[Pages]: received a notification to increment pages!')
+        logPages('Received a notification to increment pages!')
         if (this.isInHiddenPage) {
           this.isInHiddenPage= false
           this.setRotation(true)
@@ -247,7 +249,7 @@ Module.register('EXT-Pages', {
         break
       case 'EXT_PAGES-DECREMENT':
         if (this.locked) return
-        Log.log('[Pages]: received a notification to decrement pages!')
+        logPages('Received a notification to decrement pages!')
         if (this.isInHiddenPage) {
           this.isInHiddenPage= false
           this.setRotation(true)
@@ -275,13 +277,13 @@ Module.register('EXT-Pages', {
         this.notificationReceived('EXT_PAGES-CHANGED', this.config.homePage)
         break
       case 'EXT_PAGES-HIDDEN_SHOW':
-        Log.log(`[Pages]: received a notification to change to the hidden page "${payload}" of type "${typeof payload}"`)
+        logPages(`Received a notification to change to the hidden page "${payload}"`)
         if (this.locked) return
         this.setRotation(false)
         this.showHiddenPage(payload)
         break
       case 'EXT_PAGES-HIDDEN_LEAVE':
-        Log.log("[Pages]: received a notification to leave the current hidden page ")
+        logPages("Received a notification to leave the current hidden page ")
         if (this.locked) return
         if (this.isInHiddenPage) {
           this.isInHiddenPage= false
@@ -315,7 +317,7 @@ Module.register('EXT-Pages', {
    */
   changePageBy: function (amt, fallback) {
     if (typeof amt !== 'number' && typeof fallback === 'undefined') {
-      Log.warn(`[Pages]: ${amt} is not a number!`)
+      console.error(`[Pages]: ${amt} is not a number!`)
     }
 
     if (typeof amt === 'number' && !Number.isNaN(amt)) {
@@ -445,9 +447,9 @@ Module.register('EXT-Pages', {
   setRotation: function (isRotating) {
     const stateBaseString = (isRotating) ? "resum" : "paus"
     if (isRotating === !this.rotationPaused) {
-      Log.warn(`[Pages]: Was asked to ${stateBaseString}e but rotation is already ${stateBaseString}ed!`)
+      console.warn(`[Pages]: Was asked to ${stateBaseString}e but rotation is already ${stateBaseString}ed!`)
     } else {
-      Log.log(`[Pages]: ${stateBaseString}ing rotation`)
+      logPages(`${stateBaseString}ing rotation`)
       if (!isRotating) {
         clearInterval(this.timer)
       } else {
@@ -468,7 +470,7 @@ Module.register('EXT-Pages', {
       this.isInHiddenPage= true
       this.animatePageChange(name)
     } else {
-      Log.error(`[Pages] Hidden page "${name}" does not exist!`)
+      console.error(`[Pages] Hidden page "${name}" does not exist!`)
       this.sendNotification("EXT_ALERT", {
         message: `Error: Hidden page "${name}" does not exist!`,
         type: "error"
