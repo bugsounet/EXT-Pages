@@ -515,7 +515,7 @@ Module.register('EXT-Pages', {
     }
   },
 
-  getCommands: function(commander) {
+  EXT_TELBOTCommands: function(commander) {
     commander.add({
       command: "pages",
       description: "Change page number",
