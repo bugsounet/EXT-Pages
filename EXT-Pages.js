@@ -291,7 +291,7 @@ Module.register('EXT-Pages', {
         }
         this.animatePageChange()
         break
-      case "GAv4_READY":
+      case "GAv5_READY":
         this.sendNotification("EXT_HELLO", this.name)
         this.sendNotification('EXT_PAGES-NUMBER_IS', {
           Actual: this.curPage,
