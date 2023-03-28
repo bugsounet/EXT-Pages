@@ -25,8 +25,7 @@ Module.register('EXT-Pages', {
   getStyles: function() {
     return [
       "font-awesome.css",
-      "EXT-Pages.css",
-      "https://cdnjs.cloudflare.com/ajax/libs/animate.css/4.1.1/animate.min.css"
+      "EXT-Pages.css"
     ]
   },
 
@@ -57,6 +56,7 @@ Module.register('EXT-Pages', {
     this.rotationPaused = false
     this.isInHiddenPage= false
     this.locked = false
+    this.ready = false
 
     // Disable rotation if an invalid input is given
     this.config.rotationTime = Math.max(this.config.rotationTime, 0)
@@ -180,16 +180,23 @@ Module.register('EXT-Pages', {
    * @param {number|string} payload the page to change to/by
    */
   notificationReceived: function (notification, payload, sender) {
-    switch (notification) {
-      case 'DOM_OBJECTS_CREATED':
-        Log.log('[Pages]: received that all objects are created; will now hide things!')
-        this.sendNotification('EXT-PAGES_NUMBER_IS', {
+    if (notification == "GW_READY") {
+      if (sender.name == "Gateway") {
+        this.sendSocketNotification("INIT")
+        logPages('received that all objects are created; will now hide things!')
+        this.animatePageChange()
+        this.resetTimerWithDelay(0)
+        this.ready = true
+        this.sendNotification("EXT_HELLO", this.name)
+        this.sendNotification('EXT_PAGES-NUMBER_IS', {
           Actual: this.curPage,
           Total: Object.keys(this.config.pages).length
         })
-        this.animatePageChange()
-        this.resetTimerWithDelay(0)
-        break
+      }
+    }
+    if (!this.ready) return
+
+    switch (notification) {
       case 'EXT_PAGES-CHANGED':
         logPages(`Received a notification to change to page ${payload}`)
 
@@ -290,13 +297,6 @@ Module.register('EXT-Pages', {
           this.setRotation(true)
         }
         this.animatePageChange()
-        break
-      case "GAv5_READY":
-        this.sendNotification("EXT_HELLO", this.name)
-        this.sendNotification('EXT_PAGES-NUMBER_IS', {
-          Actual: this.curPage,
-          Total: Object.keys(this.config.pages).length
-        })
         break
       case "EXT_PAGES-Gateway":
         if (sender.name == "Gateway") this.sendNotification("EXT_PAGES-Gateway", this.config.Gateway)
