@@ -1,7 +1,7 @@
 {
   "name": "EXT-Pages",
-  "version": "2.0.0",
-  "rev": "230507",
+  "version": "2.0.1",
+  "rev": "230720",
   "description": "allows you to have pages in your magic mirror",
   "main": "EXT-Pages.js",
   "scripts": {
@@ -29,9 +29,11 @@
     "url": "https://github.com/bugsounet/EXT-Pages"
   },
   "homepage": "https://wiki.bugsounet.fr/en/EXT-Pages",
+  "engines": {
+    "node": ">=16.0.0"
+  },
   "dependencies": {
-    "check-node-version": "^4.2.1",
-    "glob": "^9.3.2",
-    "minify": "^9.2.0"
+    "esbuild": "^0.18.14",
+    "glob": "^10.3.3"
   }
 }
