@@ -452,8 +452,8 @@ Module.register('EXT-Pages', {
       .exceptWithClass(modulesToShow)
       .enumerate(async module => {
         if (!module.hidden) {
-          if (this.config.animatesOut[module.name] && this.animateStyleOut[this.config.animatesOut[module.name]]) {
-            await this.animateCSS(module.identifier, this.animateStyleOut[this.config.animatesOut[module.name]], animationTime/1000)
+          if (this.config.animateOut[module.name] && this.animateStyleOut[this.config.animateOut[module.name]]) {
+            await this.animateCSS(module.identifier, this.animateStyleOut[this.config.animateOut[module.name]], animationTime/1000)
             module.hide(0, () => {}, lockStringObj)
           }
           else module.hide(animationTime, () => {}, lockStringObj)
@@ -469,9 +469,9 @@ Module.register('EXT-Pages', {
         .withClass(modulesToShow)
         .enumerate(async module => {
           if (module.hidden) {
-            if (this.config.animatesIn[module.name] && this.animateStyleIn[this.config.animatesIn[module.name]]) {
+            if (this.config.animateIn[module.name] && this.animateStyleIn[this.config.animateIn[module.name]]) {
               module.show(0, () => {}, lockStringObj)
-              await this.animateCSS(module.identifier, this.animateStyleIn[this.config.animatesIn[module.name]], animationTime/1000)
+              await this.animateCSS(module.identifier, this.animateStyleIn[this.config.animateIn[module.name]], animationTime/1000)
             }
             else module.show(animationTime, () => {}, lockStringObj)
           }
