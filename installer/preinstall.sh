@@ -64,5 +64,3 @@ else
 fi
 
 echo
-Installer_info "Installing all npm libraries..."
-
