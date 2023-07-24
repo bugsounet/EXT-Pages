@@ -1,12 +1,12 @@
 {
   "name": "EXT-Pages",
-  "version": "2.0.1",
-  "rev": "230720",
+  "version": "2.0.2",
+  "rev": "230724",
   "description": "allows you to have pages in your magic mirror",
   "main": "EXT-Pages.js",
   "scripts": {
     "preinstall": "installer/preinstall.sh",
-    "postinstall": "installer/postinstall.sh",
+    "postinstall": "installer/postinstall.sh -m -b",
     "update": "installer/update.sh",
     "reset": "git reset --hard",
     "clean": "rm -rf node_modules package-lock.json"
@@ -33,7 +33,7 @@
     "node": ">=16.0.0"
   },
   "dependencies": {
-    "esbuild": "^0.18.14",
+    "esbuild": "^0.18.16",
     "glob": "^10.3.3"
   }
 }
