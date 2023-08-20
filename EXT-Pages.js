@@ -269,7 +269,9 @@ Module.register('EXT-Pages', {
           })
           return
         }
-        if (!payload) payload = 0
+
+        // assume: `payload = 0` is an empty object {}
+        if (!payload || (typeof payload == "object" && !Object.keys(payload).length)) payload = 0
         if (payload && isNaN(payload)) {
           this.sendNotification("EXT_ALERT", {
             message: "Error: EXT_PAGES-CHANGED must have an number value",
