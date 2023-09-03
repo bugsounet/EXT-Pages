@@ -34,6 +34,6 @@
   },
   "dependencies": {
     "esbuild": "^0.19.2",
-    "glob": "^10.3.3"
+    "glob": "^10.3.4"
   }
 }
