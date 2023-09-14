@@ -335,8 +335,8 @@ Module.register('EXT-Pages', {
       .exceptWithClass(modulesToShow)
       .enumerate(async module => {
         if (!module.hidden) {
-          if (this.config.animateOut[module.name] && AnimateCSSOut[this.config.animateOut[module.name]]) {
-            lockStringObj.animate = AnimateCSSOut[this.config.animateOut[module.name]]
+          if (this.config.animateOut[module.name] && AnimateCSSOut.indexOf(this.config.animateOut[module.name]) !== -1) {
+            lockStringObj.animate = this.config.animateOut[module.name]
           }
           module.hide(animationTime, () => {}, lockStringObj)
         }
@@ -351,8 +351,8 @@ Module.register('EXT-Pages', {
         .withClass(modulesToShow)
         .enumerate(async module => {
           if (module.hidden) {
-            if (this.config.animateIn[module.name] && AnimateCSSIn[this.config.animateIn[module.name]]) {
-              lockStringObj.animate = AnimateCSSIn[this.config.animateIn[module.name]]
+            if (this.config.animateIn[module.name] && AnimateCSSIn.indexOf(this.config.animateIn[module.name]) !== -1) {
+              lockStringObj.animate = this.config.animateIn[module.name]
             }
             module.show(animationTime, () => {}, lockStringObj)
           }
