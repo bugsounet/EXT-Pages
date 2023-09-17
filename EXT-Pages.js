@@ -22,6 +22,7 @@ Module.register('EXT-Pages', {
 
     homePage: 0,
     indicator: true,
+    hideBeforeRotation: false,
     loading: "loading.png",
     Gateway: {}
   },
@@ -327,13 +328,20 @@ Module.register('EXT-Pages', {
 
     const animationTime = this.config.animationTime / 2
 
-    MM.getModules()
-      .exceptModule(this)
-      .exceptWithClass(modulesToShow)
-      .enumerate(module => {
-        if (!module.hidden) module.hide(animationTime, () => {}, lockStringObj)
-      })
-
+    if (this.config.hideBeforeRotation) {
+      MM.getModules()
+        .exceptModule(this)
+        .enumerate(module => {
+          if (!module.hidden) module.hide(animationTime, () => {}, lockStringObj)
+        })
+    } else {
+      MM.getModules()
+        .exceptModule(this)
+        .exceptWithClass(modulesToShow)
+        .enumerate(module => {
+          if (!module.hidden) module.hide(animationTime, () => {}, lockStringObj)
+        })
+    }
     if (this.config.indicator) this.updateDom()
 
     // Shows all modules meant to be on the current page, after a small delay.
@@ -353,7 +361,7 @@ Module.register('EXT-Pages', {
     MM.getModules()
       .exceptModule(this)
       .enumerate(module => {
-        module.hide(0, () => {}, lockStringObj)
+        if (!module.hidden) module.hide(0, () => {}, lockStringObj)
       })
     this.Loading()
   },
