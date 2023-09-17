@@ -12,9 +12,6 @@ Module.register('EXT-Pages', {
   defaults: {
     debug: false,
 
-    animateIn: {},
-    animateOut: {},
-
     pages: {},
     fixed: [],
     hiddenPages: {},
@@ -334,12 +331,7 @@ Module.register('EXT-Pages', {
       .exceptModule(this)
       .exceptWithClass(modulesToShow)
       .enumerate(async module => {
-        if (!module.hidden) {
-          if (this.config.animateOut[module.name] && AnimateCSSOut.indexOf(this.config.animateOut[module.name]) !== -1) {
-            lockStringObj.animate = this.config.animateOut[module.name]
-          }
-          module.hide(animationTime, () => {}, lockStringObj)
-        }
+        if (!module.hidden) module.hide(animationTime, () => {}, lockStringObj)
       })
 
     if (this.config.indicator) this.updateDom()
@@ -350,12 +342,7 @@ Module.register('EXT-Pages', {
         .exceptModule(this)
         .withClass(modulesToShow)
         .enumerate(async module => {
-          if (module.hidden) {
-            if (this.config.animateIn[module.name] && AnimateCSSIn.indexOf(this.config.animateIn[module.name]) !== -1) {
-              lockStringObj.animate = this.config.animateIn[module.name]
-            }
-            module.show(animationTime, () => {}, lockStringObj)
-          }
+          if (module.hidden) module.show(animationTime, () => {}, lockStringObj)
         })
     }, this.config.animationTime)
   },
@@ -387,13 +374,14 @@ Module.register('EXT-Pages', {
     }
     Pages.appendChild(Waiting)
     document.body.appendChild(Pages)
-    await AnimateCSS("EXT_PAGES", "rotateIn" , 1)
+    addAnimateCSS("EXT_PAGES", "rotateIn" , 1)
   },
 
   /** It's Loaded, hide loading page **/
   Loaded: function () {
     let Waiting = document.getElementById("EXT_PAGES")
     Waiting.classList.add("hidden")
+    removeAnimateCSS("EXT_PAGES", "rotateIn")
   },
 
   /**
