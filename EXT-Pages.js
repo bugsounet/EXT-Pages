@@ -330,7 +330,7 @@ Module.register('EXT-Pages', {
     MM.getModules()
       .exceptModule(this)
       .exceptWithClass(modulesToShow)
-      .enumerate(async module => {
+      .enumerate(module => {
         if (!module.hidden) module.hide(animationTime, () => {}, lockStringObj)
       })
 
@@ -341,7 +341,7 @@ Module.register('EXT-Pages', {
       MM.getModules()
         .exceptModule(this)
         .withClass(modulesToShow)
-        .enumerate(async module => {
+        .enumerate(module => {
           if (module.hidden) module.show(animationTime, () => {}, lockStringObj)
         })
     }, this.config.animationTime)
@@ -359,7 +359,7 @@ Module.register('EXT-Pages', {
   },
 
   /** display loaging images **/
-  Loading: async function () {
+  Loading: function () {
     let Pages = document.createElement("div")
     Pages.id = "EXT_PAGES"
     let Waiting = document.createElement("img")
