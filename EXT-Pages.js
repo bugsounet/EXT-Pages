@@ -313,8 +313,11 @@ Module.register('EXT-Pages', {
     // meant to be shown.
 
     let modulesToShow
+    let isHiddenPages = false
+    let hiddenPage
     if (typeof targetPageName !== 'undefined') {
-      modulesToShow = this.config.hiddenPages[targetPageName]
+      isHiddenPages = true
+      hiddenPage = this.config.hiddenPages[targetPageName]
     } else {
       if (!this.config.pages[this.curPage]) {
         this.sendNotification("EXT_ALERT", {
@@ -328,27 +331,20 @@ Module.register('EXT-Pages', {
 
     const animationTime = this.config.animationTime / 2
 
-    if (this.config.hideBeforeRotation) {
-      MM.getModules()
-        .exceptModule(this)
-        .enumerate(module => {
-          if (!module.hidden) module.hide(animationTime, () => {}, lockStringObj)
-        })
-    } else {
-      MM.getModules()
-        .exceptModule(this)
-        .exceptWithClass(modulesToShow)
-        .enumerate(module => {
-          if (!module.hidden) module.hide(animationTime, () => {}, lockStringObj)
-        })
-    }
+    MM.getModules()
+      .exceptModule(this)
+      .exceptWithClass(isHiddenPages ? [] : (this.config.hideBeforeRotation ? this.config.fixed : modulesToShow))
+      .enumerate(module => {
+        if (!module.hidden) module.hide(animationTime, () => {}, lockStringObj)
+      })
+
     if (this.config.indicator) this.updateDom()
 
     // Shows all modules meant to be on the current page, after a small delay.
     setTimeout(() => {
       MM.getModules()
         .exceptModule(this)
-        .withClass(modulesToShow)
+        .withClass(isHiddenPages ? hiddenPage : modulesToShow)
         .enumerate(module => {
           if (module.hidden) module.show(animationTime, () => {}, lockStringObj)
         })
