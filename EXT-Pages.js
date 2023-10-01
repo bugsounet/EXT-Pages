@@ -1,14 +1,16 @@
 Module.register('EXT-Pages', {
   /**
+   * This version use animateCSS of MM² v2.25.0
+   */
+  requiresVersion: "2.25.0",
+
+  /**
    * By default, we have don't pseudo-paginate any modules. We also exclude
    * the page indicator by default, in case people actually want to use the
    * sister module. We also don't rotate out modules by default.
    */
   defaults: {
     debug: false,
-
-    animateIn: {},
-    animateOut: {},
 
     pages: {},
     fixed: [],
@@ -20,6 +22,7 @@ Module.register('EXT-Pages', {
 
     homePage: 0,
     indicator: true,
+    hideBeforeRotation: false,
     loading: "loading.png",
     Gateway: {}
   },
@@ -71,128 +74,6 @@ Module.register('EXT-Pages', {
         this.config.rotationTimes[i]= Math.max(this.config.rotationTimes[i], 0)
       }
     }
-
-    this.animateStyleIn= {
-      // Attention seekers
-      1: "bounce",
-      2: "flash",
-      3: "pulse",
-      4: "rubberBand",
-      5: "shakeX",
-      6: "shakeY",
-      7: "headShake",
-      8: "swing",
-      9: "tada",
-      10: "wobble",
-      11: "jello",
-      12: "heartBeat",
-      // Back entrances
-      13: "backInDown",
-      14: "backInLeft",
-      15: "backInRight",
-      16: "backInUp",
-      // Bouncing entrances
-      17: "bounceIn",
-      18: "bounceInDown",
-      19: "bounceInLeft",
-      20: "bounceInRight",
-      21: "bounceInUp",
-      // Fading entrances
-      22: "fadeIn",
-      23: "fadeInDown",
-      24: "fadeInDownBig",
-      25: "fadeInLeft",
-      26: "fadeInLeftBig",
-      27: "fadeInRight",
-      28: "fadeInRightBig",
-      29: "fadeInUp",
-      30: "fadeInUpBig",
-      31: "fadeInTopLeft",
-      32: "fadeInTopRight",
-      33: "fadeInBottomLeft",
-      34: "fadeInBottomRight",
-      // Flippers
-      35: "flip",
-      36: "flipInX",
-      37: "flipInY",
-      // Lightspeed
-      38: "lightSpeedInRight",
-      39: "lightSpeedInLeft",
-      // Rotating entrances
-      40: "rotateIn",
-      41: "rotateInDownLeft",
-      42: "rotateInDownRight",
-      43: "rotateInUpLeft",
-      44: "rotateInUpRight",
-      // Specials
-      45: "jackInTheBox",
-      46: "rollIn",
-      // Zooming entrances
-      47: "zoomIn",
-      48: "zoomInDown",
-      49: "zoomInLeft",
-      50: "zoomInRight",
-      51: "zoomInUp",
-      // Sliding entrances
-      52: "slideInDown",
-      53: "slideInLeft",
-      54: "slideInRight",
-      55: "slideInUp"
-    }
-
-    this.animateStyleOut= {
-      // Back exits
-      1: "backOutDown",
-      2: "backOutLeft",
-      3: "backOutRight",
-      4: "backOutUp",
-      // Bouncing exits
-      5: "bounceOut",
-      6: "bounceOutDown",
-      7: "bounceOutLeft",
-      8: "bounceOutRight",
-      9: "bounceOutUp",
-      // Fading exits
-      10: "fadeOut",
-      11: "fadeOutDown",
-      12: "fadeOutDownBig",
-      13: "fadeOutLeft",
-      14: "fadeOutLeftBig",
-      15: "fadeOutRight",
-      16: "fadeOutRightBig",
-      17: "fadeOutUp",
-      18: "fadeOutUpBig",
-      19: "fadeOutTopLeft",
-      20: "fadeOutTopRight",
-      21: "fadeOutBottomRight",
-      22: "fadeOutBottomLeft",
-      // Flippers
-      23: "flipOutX",
-      24: "flipOutY",
-      // Lightspeed
-      25: "lightSpeedOutRight",
-      26: "lightSpeedOutLeft",
-      // Rotating exits
-      27: "rotateOut",
-      28: "rotateOutDownLeft",
-      29: "rotateOutDownRight",
-      30: "rotateOutUpLeft",
-      31: "rotateOutUpRight",
-      // Specials
-      32: "hinge",
-      33: "rollOut",
-      // Zooming exits
-      34: "zoomOut",
-      35: "zoomOutDown",
-      36: "zoomOutLeft",
-      37: "zoomOutRight",
-      38: "zoomOutUp",
-      // Sliding exits
-      39: "slideOutDown",
-      40: "slideOutLeft",
-      41: "slideOutRight",
-      42: "slideOutUp"
-    }
   },
 
   getDom: function() {
@@ -241,20 +122,18 @@ Module.register('EXT-Pages', {
     if (notification == "MODULE_DOM_CREATED") {
       this.HideAllModules()
     }
-    if (notification == "GW_READY") {
-      if (sender.name == "Gateway") {
-        this.sendSocketNotification("INIT")
-        logPages('received that all objects are created; will now hide things!')
-        this.Loaded()
-        this.animatePageChange()
-        this.resetTimerWithDelay(0)
-        this.ready = true
-        this.sendNotification("EXT_HELLO", this.name)
-        this.sendNotification('EXT_PAGES-NUMBER_IS', {
-          Actual: this.curPage,
-          Total: Object.keys(this.config.pages).length
-        })
-      }
+    if (notification == "GW_READY" && sender.name == "Gateway") {
+      this.sendSocketNotification("INIT")
+      logPages('received that all objects are created; will now hide things!')
+      this.Loaded()
+      this.animatePageChange()
+      this.resetTimerWithDelay(0)
+      this.ready = true
+      this.sendNotification("EXT_HELLO", this.name)
+      this.sendNotification('EXT_PAGES-NUMBER_IS', {
+        Actual: this.curPage,
+        Total: Object.keys(this.config.pages).length
+      })
     }
     if (!this.ready) return
 
@@ -434,8 +313,11 @@ Module.register('EXT-Pages', {
     // meant to be shown.
 
     let modulesToShow
+    let isHiddenPages = false
+    let hiddenPage
     if (typeof targetPageName !== 'undefined') {
-      modulesToShow = this.config.hiddenPages[targetPageName]
+      isHiddenPages = true
+      hiddenPage = this.config.hiddenPages[targetPageName]
     } else {
       if (!this.config.pages[this.curPage]) {
         this.sendNotification("EXT_ALERT", {
@@ -451,15 +333,9 @@ Module.register('EXT-Pages', {
 
     MM.getModules()
       .exceptModule(this)
-      .exceptWithClass(modulesToShow)
-      .enumerate(async module => {
-        if (!module.hidden) {
-          if (this.config.animateOut[module.name] && this.animateStyleOut[this.config.animateOut[module.name]]) {
-            await this.animateCSS(module.identifier, this.animateStyleOut[this.config.animateOut[module.name]], animationTime/1000)
-            module.hide(0, () => {}, lockStringObj)
-          }
-          else module.hide(animationTime, () => {}, lockStringObj)
-        }
+      .exceptWithClass(isHiddenPages ? [] : (this.config.hideBeforeRotation ? this.config.fixed : modulesToShow))
+      .enumerate(module => {
+        if (!module.hidden) module.hide(animationTime, () => {}, lockStringObj)
       })
 
     if (this.config.indicator) this.updateDom()
@@ -468,15 +344,9 @@ Module.register('EXT-Pages', {
     setTimeout(() => {
       MM.getModules()
         .exceptModule(this)
-        .withClass(modulesToShow)
-        .enumerate(async module => {
-          if (module.hidden) {
-            if (this.config.animateIn[module.name] && this.animateStyleIn[this.config.animateIn[module.name]]) {
-              module.show(0, () => {}, lockStringObj)
-              await this.animateCSS(module.identifier, this.animateStyleIn[this.config.animateIn[module.name]], animationTime/1000)
-            }
-            else module.show(animationTime, () => {}, lockStringObj)
-          }
+        .withClass(isHiddenPages ? hiddenPage : modulesToShow)
+        .enumerate(module => {
+          if (module.hidden) module.show(animationTime, () => {}, lockStringObj)
         })
     }, this.config.animationTime)
   },
@@ -487,13 +357,13 @@ Module.register('EXT-Pages', {
     MM.getModules()
       .exceptModule(this)
       .enumerate(module => {
-        module.hide(0, () => {}, lockStringObj)
+        if (!module.hidden) module.hide(0, () => {}, lockStringObj)
       })
     this.Loading()
   },
 
   /** display loaging images **/
-  Loading: async function () {
+  Loading: function () {
     let Pages = document.createElement("div")
     Pages.id = "EXT_PAGES"
     let Waiting = document.createElement("img")
@@ -508,13 +378,14 @@ Module.register('EXT-Pages', {
     }
     Pages.appendChild(Waiting)
     document.body.appendChild(Pages)
-    await this.animateCSS("EXT_PAGES", "rotateIn" , 1)
+    addAnimateCSS("EXT_PAGES", "rotateIn" , 1)
   },
 
   /** It's Loaded, hide loading page **/
   Loaded: function () {
     let Waiting = document.getElementById("EXT_PAGES")
     Waiting.classList.add("hidden")
+    removeAnimateCSS("EXT_PAGES", "rotateIn")
   },
 
   /**
@@ -569,29 +440,6 @@ Module.register('EXT-Pages', {
         type: "error"
       })
     }
-  },
-
-  /**
-   * Handle Animation
-   */
-  animateCSS: function (element, animation, animationTime) {
-    // We create a Promise and return it
-    return new Promise(resolve => {
-      const animationName = "animate__"+animation
-      const node = document.getElementById(element)
-      if (!node) return Log.warn(`[Pages] node not found for`, element)
-      node.style.setProperty("--animate-duration", animationTime+"s")
-      node.classList.add("animate__animated", animationName)
-
-      // When the animation ends, we clean the classes and resolve the Promise
-      function handleAnimationEnd(event) {
-        node.classList.remove("animate__animated", animationName)
-        event.stopPropagation()
-        resolve()
-      }
-
-      node.addEventListener('animationend', handleAnimationEnd, {once: true})
-    })
   },
 
   checkPagesConfig: function() {
