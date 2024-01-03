@@ -122,7 +122,7 @@ Module.register('EXT-Pages', {
     if (notification == "MODULE_DOM_CREATED") {
       this.HideAllModules()
     }
-    if (notification == "GW_READY" && sender.name == "Gateway") {
+    if (notification == "GA_READY" && sender.name == "MMM-GoogleAssistant") {
       this.sendSocketNotification("INIT")
       logPages('received that all objects are created; will now hide things!')
       this.Loaded()
