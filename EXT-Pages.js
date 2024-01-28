@@ -141,9 +141,9 @@ Module.register('EXT-Pages', {
       case 'EXT_PAGES-CHANGED':
         logPages(`Received a notification to change to page ${payload}`)
 
-        if (this.locked && (!sender || sender.name != "Gateway")) {
+        if (this.locked && (!sender || sender.name != "MMM-GoogleAssistant")) {
           this.sendNotification("EXT_ALERT", {
-            message: "Error: EXT-PAGES is locked by Gateway!",
+            message: "Error: EXT-PAGES is locked by MMM-GoogleAssistant!",
             type: "error"
           })
           return
@@ -173,7 +173,7 @@ Module.register('EXT-Pages', {
         this.updatePages()
         break
       case "EXT_PAGES-LOCK":
-        if (sender.name == "Gateway") {
+        if (sender.name == "MMM-GoogleAssistant") {
           if (this.locked) return
           logPages('Received a lock notification!')
           this.setRotation(false)
@@ -181,7 +181,7 @@ Module.register('EXT-Pages', {
         }
         break
       case "EXT_PAGES-UNLOCK":
-        if (sender.name == "Gateway") { // unforce anyway
+        if (sender.name == "MMM-GoogleAssistant") { // unforce anyway
           logPages('Received an unlock notification!')
           this.setRotation(true)
           this.locked = false
@@ -242,7 +242,7 @@ Module.register('EXT-Pages', {
         this.animatePageChange()
         break
       case "EXT_PAGES-Gateway":
-        if (sender.name == "Gateway") this.sendNotification("EXT_PAGES-Gateway", this.config.Gateway)
+        if (sender.name == "MMM-GoogleAssistant") this.sendNotification("EXT_PAGES-Gateway", this.config.Gateway)
         break
       default: // Do nothing
     }
