@@ -366,19 +366,33 @@ Module.register('EXT-Pages', {
   Loading: function () {
     let Pages = document.createElement("div")
     Pages.id = "EXT_PAGES"
-    let Waiting = document.createElement("img")
-    Waiting.id = "EXT_PAGES-Loading"
-    Waiting.src= "/modules/EXT-Pages/loading/" + this.config.loading
-    Waiting.onerror= () => {
-      Waiting.src= "/modules/EXT-Pages/loading/loading.png"
-      this.sendNotification("EXT_ALERT", {
-        message: `Error: Loading picture ${this.config.loading} !`,
-        type: "warn"
-      })
-    }
-    Pages.appendChild(Waiting)
+      let GoogleAssistant = document.createElement("div")
+      GoogleAssistant.id = "EXT_Pages-GoogleAssistant"
+      Pages.appendChild(GoogleAssistant)
+        let GoogleAssistantImg = document.createElement("img")
+        GoogleAssistantImg.id = "EXT_Pages-GoogleAssistantImg"
+        GoogleAssistantImg.src= "/modules/EXT-Pages/loading/works-with-google-assistant.png"
+        GoogleAssistant.appendChild(GoogleAssistantImg)
+
+        let Waiting = document.createElement("div")
+        Waiting.id = "Waiting"
+        Pages.appendChild(Waiting)
+
+      let WaitingImg = document.createElement("img")
+      WaitingImg.id = "EXT_PAGES-Loading"
+      WaitingImg.src= "/modules/EXT-Pages/loading/" + this.config.loading
+      WaitingImg.onerror= () => {
+        WaitingImg.src= "/modules/EXT-Pages/loading/loading.png"
+        this.sendNotification("EXT_ALERT", {
+          message: `Error: Loading picture ${this.config.loading} !`,
+          type: "warn"
+        })
+      }
+      Waiting.appendChild(WaitingImg)
+
     document.body.appendChild(Pages)
-    addAnimateCSS("EXT_PAGES", "rotateIn" , 1)
+    addAnimateCSS("EXT_PAGES-Loading", "rotateIn" , 1)
+    addAnimateCSS("EXT_Pages-GoogleAssistant", "flipInX" , 1)
   },
 
   /** It's Loaded, hide loading page **/
