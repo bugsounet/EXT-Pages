@@ -392,7 +392,7 @@ Module.register('EXT-Pages', {
 
     document.body.appendChild(Pages)
     addAnimateCSS("EXT_PAGES-Loading", "rotateIn" , 1)
-    addAnimateCSS("EXT_Pages-GoogleAssistant", "flipInX" , 2)
+    addAnimateCSS("EXT_Pages-GoogleAssistant", "flipInX" , 1)
   },
 
   /** It's Loaded, hide loading page **/
