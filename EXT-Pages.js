@@ -1,4 +1,4 @@
-Module.register('EXT-Pages', {
+Module.register("EXT-Pages", {
   /**
    * This version use animateCSS of MM² v2.25.0
    */
@@ -30,11 +30,11 @@ Module.register('EXT-Pages', {
   /**
    * Apply any styles, if we have any.
    */
-  getStyles: function() {
+  getStyles () {
     return [
       "font-awesome.css",
       "EXT-Pages.css"
-    ]
+    ];
   },
 
   /**
@@ -43,61 +43,61 @@ Module.register('EXT-Pages', {
    * @param {number} x The dividend
    * @param {number} n The divisor
    */
-  mod: function (x, n) {
-    return ((x % n) + n) % n
+  mod (x, n) {
+    return ((x % n) + n) % n;
   },
 
   /**
    * Pseudo-constructor for our module. Makes sure that values aren't negative,
    * and sets the default current page to 0.
    */
-  start: function () {
-    logPages = (...args) => { /* do nothing */ }
-    if (this.config.debug) logPages = (...args) => { console.log("[PAGES]", ...args) }
-    this.timer = null
+  start () {
+    logPages = (...args) => { /* do nothing */ };
+    if (this.config.debug) logPages = (...args) => { console.log("[PAGES]", ...args); };
+    this.timer = null;
     // Clamp homePage value to [0, num pages).
     if (this.config.homePage >= Object.keys(this.config.pages).length || this.config.homePage < 0) {
-      this.config.homePage = 0
+      this.config.homePage = 0;
     }
-    this.checkPagesConfig()
-    this.curPage = this.config.homePage
-    this.rotationPaused = false
-    this.isInHiddenPage= false
-    this.locked = false
-    this.ready = false
+    this.checkPagesConfig();
+    this.curPage = this.config.homePage;
+    this.rotationPaused = false;
+    this.isInHiddenPage= false;
+    this.locked = false;
+    this.ready = false;
 
     // Disable rotation if an invalid input is given
-    this.config.rotationTime = Math.max(this.config.rotationTime, 0)
+    this.config.rotationTime = Math.max(this.config.rotationTime, 0);
 
     if (Object.keys(this.config.rotationTimes).length) {
       for (let i = 0; i < Object.keys(this.config.rotationTimes).length; i += 1) {
-        this.config.rotationTimes[i]= Math.max(this.config.rotationTimes[i], 0)
+        this.config.rotationTimes[i]= Math.max(this.config.rotationTimes[i], 0);
       }
     }
   },
 
-  getDom: function() {
-    const wrapper = document.createElement('div')
+  getDom () {
+    const wrapper = document.createElement("div");
     if (!this.config.indicator) {
-      wrapper.style.display = 'none'
-      return wrapper
+      wrapper.style.display = "none";
+      return wrapper;
     }
     for (let i = 0; i < Object.keys(this.config.pages).length; i += 1) {
-      const circle = document.createElement('i')
+      const circle = document.createElement("i");
       if (this.curPage === i && !this.isInHiddenPage) {
-        circle.className = 'fa fa-circle indicator bright'
+        circle.className = "fa fa-circle indicator bright";
       } else {
-        circle.className = 'fa fa-circle-thin indicator dimmed'
+        circle.className = "fa fa-circle-thin indicator dimmed";
       }
-      wrapper.appendChild(circle)
+      wrapper.appendChild(circle);
 
       circle.onclick = () => {
-        this.notificationReceived('EXT_PAGES-CHANGED', i)
-        if (!this.locked) this.curPage = i
-      }
+        this.notificationReceived("EXT_PAGES-CHANGED", i);
+        if (!this.locked) this.curPage = i;
+      };
     }
 
-    return wrapper
+    return wrapper;
   },
 
   /**
@@ -118,132 +118,133 @@ Module.register('EXT-Pages', {
    * @param {string} notification the notification ID
    * @param {number|string} payload the page to change to/by
    */
-  notificationReceived: function (notification, payload, sender) {
-    if (notification == "MODULE_DOM_CREATED") {
-      this.HideAllModules()
+  notificationReceived (notification, payload, sender) {
+    if (notification === "MODULE_DOM_CREATED") {
+      this.HideAllModules();
     }
-    if (notification == "GA_READY" && sender.name == "MMM-GoogleAssistant") {
-      this.sendSocketNotification("INIT")
-      logPages('received that all objects are created; will now hide things!')
-      this.Loaded()
-      this.animatePageChange()
-      this.resetTimerWithDelay(0)
-      this.ready = true
-      this.sendNotification("EXT_HELLO", this.name)
-      this.sendNotification('EXT_PAGES-NUMBER_IS', {
+    if (notification === "GA_READY" && sender.name === "MMM-GoogleAssistant") {
+      this.sendSocketNotification("INIT");
+      logPages("received that all objects are created; will now hide things!");
+      this.Loaded();
+      this.animatePageChange();
+      this.resetTimerWithDelay(0);
+      this.ready = true;
+      this.sendNotification("EXT_HELLO", this.name);
+      this.sendNotification("EXT_PAGES-NUMBER_IS", {
         Actual: this.curPage,
         Total: Object.keys(this.config.pages).length
-      })
+      });
     }
-    if (!this.ready) return
+    if (!this.ready) return;
 
     switch (notification) {
-      case 'EXT_PAGES-CHANGED':
-        logPages(`Received a notification to change to page ${payload}`)
+      case "EXT_PAGES-CHANGED":
+        logPages(`Received a notification to change to page ${payload}`);
+        let pagesChangedValue = payload;
 
-        if (this.locked && (!sender || sender.name != "MMM-GoogleAssistant")) {
+        if (this.locked && (!sender || sender.name !== "MMM-GoogleAssistant")) {
           this.sendNotification("EXT_ALERT", {
             message: "Error: EXT-PAGES is locked by MMM-GoogleAssistant!",
             type: "error"
-          })
-          return
+          });
+          return;
         }
 
         // assume: `payload = 0` is an empty object {}
-        if (!payload || (typeof payload == "object" && !Object.keys(payload).length)) payload = 0
-        if (payload && isNaN(payload)) {
+        if (!pagesChangedValue || (typeof pagesChangedValue === "object" && !Object.keys(pagesChangedValue).length)) pagesChangedValue = 0;
+        if (pagesChangedValue && isNaN(pagesChangedValue)) {
           this.sendNotification("EXT_ALERT", {
             message: "Error: EXT_PAGES-CHANGED must have an number value",
             type: "error"
-          })
-          return
+          });
+          return;
         }
-        payload = parseInt(payload)
-        if (payload >= Object.keys(this.config.pages).length || payload < 0) {
+        pagesChangedValue = parseInt(pagesChangedValue);
+        if (pagesChangedValue >= Object.keys(this.config.pages).length || pagesChangedValue < 0) {
           return this.sendNotification("EXT_ALERT", {
-            message: "Error: This page don't exist: " + payload,
+            message: `Error: This page don't exist: ${payload}`,
             type: "error"
-          })
+          });
         }
-        this.curPage = payload
+        this.curPage = pagesChangedValue;
         if (this.isInHiddenPage) {
-          this.isInHiddenPage= false
-          this.setRotation(true)
+          this.isInHiddenPage= false;
+          this.setRotation(true);
         }
-        this.updatePages()
-        break
+        this.updatePages();
+        break;
       case "EXT_PAGES-LOCK":
-        if (sender.name == "MMM-GoogleAssistant") {
-          if (this.locked) return
-          logPages('Received a lock notification!')
-          this.setRotation(false)
-          this.locked = true
+        if (sender.name === "MMM-GoogleAssistant") {
+          if (this.locked) return;
+          logPages("Received a lock notification!");
+          this.setRotation(false);
+          this.locked = true;
         }
-        break
+        break;
       case "EXT_PAGES-UNLOCK":
-        if (sender.name == "MMM-GoogleAssistant") { // unforce anyway
-          logPages('Received an unlock notification!')
-          this.setRotation(true)
-          this.locked = false
+        if (sender.name === "MMM-GoogleAssistant") { // unforce anyway
+          logPages("Received an unlock notification!");
+          this.setRotation(true);
+          this.locked = false;
         }
-        break
-      case 'EXT_PAGES-INCREMENT':
-        if (this.locked) return
-        logPages('Received a notification to increment pages!')
+        break;
+      case "EXT_PAGES-INCREMENT":
+        if (this.locked) return;
+        logPages("Received a notification to increment pages!");
         if (this.isInHiddenPage) {
-          this.isInHiddenPage= false
-          this.setRotation(true)
+          this.isInHiddenPage= false;
+          this.setRotation(true);
         }
-        this.changePageBy(payload, 1)
-        this.updatePages()
-        break
-      case 'EXT_PAGES-DECREMENT':
-        if (this.locked) return
-        logPages('Received a notification to decrement pages!')
+        this.changePageBy(payload, 1);
+        this.updatePages();
+        break;
+      case "EXT_PAGES-DECREMENT":
+        if (this.locked) return;
+        logPages("Received a notification to decrement pages!");
         if (this.isInHiddenPage) {
-          this.isInHiddenPage= false
-          this.setRotation(true)
+          this.isInHiddenPage= false;
+          this.setRotation(true);
         }
         // We can't just pass in -payload for situations where payload is null
         // JS will coerce -payload to -0.
-        this.changePageBy(payload ? -payload : payload, -1)
-        this.updatePages()
-        break
-      case 'EXT_PAGES-NUMBER':
-        this.sendNotification('EXT-PAGES_NUMBER_IS', {
+        this.changePageBy(payload ? -payload : payload, -1);
+        this.updatePages();
+        break;
+      case "EXT_PAGES-NUMBER":
+        this.sendNotification("EXT-PAGES_NUMBER_IS", {
           Actual: this.curPage,
           Total: Object.keys(this.config.pages).length
-        })
-        break
-      case 'EXT_PAGES-PAUSE':
-        if (this.locked) return
-        this.setRotation(false)
-        break
-      case 'EXT_PAGES-RESUME':
-        if (this.locked) return
-        this.setRotation(true)
-        break
-      case 'EXT_PAGES-HOME':
-        this.notificationReceived('EXT_PAGES-CHANGED', this.config.homePage)
-        break
-      case 'EXT_PAGES-HIDDEN_SHOW':
-        logPages(`Received a notification to change to the hidden page "${payload}"`)
-        if (this.locked) return
-        this.setRotation(false)
-        this.showHiddenPage(payload)
-        break
-      case 'EXT_PAGES-HIDDEN_LEAVE':
-        logPages("Received a notification to leave the current hidden page ")
-        if (this.locked) return
+        });
+        break;
+      case "EXT_PAGES-PAUSE":
+        if (this.locked) return;
+        this.setRotation(false);
+        break;
+      case "EXT_PAGES-RESUME":
+        if (this.locked) return;
+        this.setRotation(true);
+        break;
+      case "EXT_PAGES-HOME":
+        this.notificationReceived("EXT_PAGES-CHANGED", this.config.homePage);
+        break;
+      case "EXT_PAGES-HIDDEN_SHOW":
+        logPages(`Received a notification to change to the hidden page "${payload}"`);
+        if (this.locked) return;
+        this.setRotation(false);
+        this.showHiddenPage(payload);
+        break;
+      case "EXT_PAGES-HIDDEN_LEAVE":
+        logPages("Received a notification to leave the current hidden page ");
+        if (this.locked) return;
         if (this.isInHiddenPage) {
-          this.isInHiddenPage= false
-          this.setRotation(true)
+          this.isInHiddenPage= false;
+          this.setRotation(true);
         }
-        this.animatePageChange()
-        break
+        this.animatePageChange();
+        break;
       case "EXT_PAGES-Gateway":
-        if (sender.name == "MMM-GoogleAssistant") this.sendNotification("EXT_PAGES-Gateway", this.config.Gateway)
-        break
+        if (sender.name === "MMM-GoogleAssistant") this.sendNotification("EXT_PAGES-Gateway", this.config.Gateway);
+        break;
       default: // Do nothing
     }
   },
@@ -258,21 +259,21 @@ Module.register('EXT-Pages', {
    * @param {number} fallback the fallback value to use. Accepts negative
    * numbers.
    */
-  changePageBy: function (amt, fallback) {
-    if (typeof amt !== 'number' && typeof fallback === 'undefined') {
-      console.error(`[Pages]: ${amt} is not a number!`)
+  changePageBy (amt, fallback) {
+    if (typeof amt !== "number" && typeof fallback === "undefined") {
+      console.error(`[Pages]: ${amt} is not a number!`);
     }
 
-    if (typeof amt === 'number' && !Number.isNaN(amt)) {
+    if (typeof amt === "number" && !Number.isNaN(amt)) {
       this.curPage = this.mod(
         this.curPage + amt,
         Object.keys(this.config.pages).length
-      )
-    } else if (typeof fallback === 'number') {
+      );
+    } else if (typeof fallback === "number") {
       this.curPage = this.mod(
         this.curPage + fallback,
         Object.keys(this.config.pages).length
-      )
+      );
     }
   },
 
@@ -280,21 +281,21 @@ Module.register('EXT-Pages', {
    * Handles hiding the current page's elements and showing the next page's
    * elements.
    */
-  updatePages: function () {
+  updatePages () {
     // Update iff there's at least one page.
     if (Object.keys(this.config.pages).length !== 0) {
-      this.animatePageChange()
-      if (!this.rotationPaused) this.resetTimerWithDelay(0)
-      this.sendNotification('EXT_PAGES-NUMBER_IS', {
+      this.animatePageChange();
+      if (!this.rotationPaused) this.resetTimerWithDelay(0);
+      this.sendNotification("EXT_PAGES-NUMBER_IS", {
         Actual: this.curPage,
         Total: Object.keys(this.config.pages).length
-      })
+      });
     } else {
       this.sendNotification("EXT_ALERT", {
         message: "Error: Pages aren't properly defined!",
         type: "error"
-      })
-      Log.error("[Pages]: Pages aren't properly defined!")
+      });
+      Log.error("[Pages]: Pages aren't properly defined!");
     }
   },
 
@@ -306,100 +307,100 @@ Module.register('EXT-Pages', {
    * @param {string} [targetPageName] the name of the hiddenPage we want to show.
    * Optional and only used when we want to switch to a hidden page
    */
-  animatePageChange: function (targetPageName) {
-    let lockStringObj = { lockString: "EXT-Pages-Locked" }
+  animatePageChange (targetPageName) {
+    let lockStringObj = { lockString: "EXT-Pages-Locked" };
 
     // Hides all modules not on the current page. This hides any module not
     // meant to be shown.
 
-    let modulesToShow
-    let isHiddenPages = false
-    let hiddenPage
-    if (typeof targetPageName !== 'undefined') {
-      isHiddenPages = true
-      hiddenPage = this.config.hiddenPages[targetPageName]
+    let modulesToShow;
+    let isHiddenPages = false;
+    let hiddenPage;
+    if (typeof targetPageName !== "undefined") {
+      isHiddenPages = true;
+      hiddenPage = this.config.hiddenPages[targetPageName];
     } else {
       if (!this.config.pages[this.curPage]) {
         this.sendNotification("EXT_ALERT", {
-          message: "Error: Page " + this.curPage + " not found!",
+          message: `Error: Page ${this.curPage} not found!`,
           type: "error"
-        })
-        modulesToShow = this.config.fixed
+        });
+        modulesToShow = this.config.fixed;
       }
-      else modulesToShow = this.config.fixed.concat(this.config.pages[this.curPage])
+      else modulesToShow = this.config.fixed.concat(this.config.pages[this.curPage]);
     }
 
-    const animationTime = this.config.animationTime / 2
+    const animationTime = this.config.animationTime / 2;
 
     MM.getModules()
       .exceptModule(this)
       .exceptWithClass(isHiddenPages ? [] : (this.config.hideBeforeRotation ? this.config.fixed : modulesToShow))
-      .enumerate(module => {
-        if (!module.hidden) module.hide(animationTime, () => {}, lockStringObj)
-      })
+      .enumerate((module) => {
+        if (!module.hidden) module.hide(animationTime, () => {}, lockStringObj);
+      });
 
-    if (this.config.indicator) this.updateDom()
+    if (this.config.indicator) this.updateDom();
 
     // Shows all modules meant to be on the current page, after a small delay.
     setTimeout(() => {
       MM.getModules()
         .exceptModule(this)
         .withClass(isHiddenPages ? hiddenPage : modulesToShow)
-        .enumerate(module => {
-          if (module.hidden) module.show(animationTime, () => {}, lockStringObj)
-        })
-    }, this.config.animationTime)
+        .enumerate((module) => {
+          if (module.hidden) module.show(animationTime, () => {}, lockStringObj);
+        });
+    }, this.config.animationTime);
   },
 
   /** Hide All modules **/
-  HideAllModules: function () {
-    let lockStringObj = { lockString: "EXT-Pages-Locked" }
+  HideAllModules () {
+    let lockStringObj = { lockString: "EXT-Pages-Locked" };
     MM.getModules()
       .exceptModule(this)
-      .enumerate(module => {
-        if (!module.hidden) module.hide(0, () => {}, lockStringObj)
-      })
-    this.Loading()
+      .enumerate((module) => {
+        if (!module.hidden) module.hide(0, () => {}, lockStringObj);
+      });
+    this.Loading();
   },
 
   /** display loaging images **/
-  Loading: function () {
-    let Pages = document.createElement("div")
-    Pages.id = "EXT_PAGES"
-      let GoogleAssistant = document.createElement("div")
-      GoogleAssistant.id = "EXT_Pages-GoogleAssistant"
-      Pages.appendChild(GoogleAssistant)
-        let GoogleAssistantImg = document.createElement("img")
-        GoogleAssistantImg.id = "EXT_Pages-GoogleAssistantImg"
-        GoogleAssistantImg.src= "/modules/EXT-Pages/loading/works-with-google-assistant.png"
-        GoogleAssistant.appendChild(GoogleAssistantImg)
+  Loading () {
+    let Pages = document.createElement("div");
+    Pages.id = "EXT_PAGES";
+    let GoogleAssistant = document.createElement("div");
+    GoogleAssistant.id = "EXT_Pages-GoogleAssistant";
+    Pages.appendChild(GoogleAssistant);
+    let GoogleAssistantImg = document.createElement("img");
+    GoogleAssistantImg.id = "EXT_Pages-GoogleAssistantImg";
+    GoogleAssistantImg.src= "/modules/EXT-Pages/loading/works-with-google-assistant.png";
+    GoogleAssistant.appendChild(GoogleAssistantImg);
 
-        let Waiting = document.createElement("div")
-        Waiting.id = "Waiting"
-        Pages.appendChild(Waiting)
+    let Waiting = document.createElement("div");
+    Waiting.id = "Waiting";
+    Pages.appendChild(Waiting);
 
-      let WaitingImg = document.createElement("img")
-      WaitingImg.id = "EXT_PAGES-Loading"
-      WaitingImg.src= "/modules/EXT-Pages/loading/" + this.config.loading
-      WaitingImg.onerror= () => {
-        WaitingImg.src= "/modules/EXT-Pages/loading/loading.png"
-        this.sendNotification("EXT_ALERT", {
-          message: `Error: Loading picture ${this.config.loading} !`,
-          type: "warn"
-        })
-      }
-      Waiting.appendChild(WaitingImg)
+    let WaitingImg = document.createElement("img");
+    WaitingImg.id = "EXT_PAGES-Loading";
+    WaitingImg.src= `/modules/EXT-Pages/loading/${this.config.loading}`;
+    WaitingImg.onerror= () => {
+      WaitingImg.src= "/modules/EXT-Pages/loading/loading.png";
+      this.sendNotification("EXT_ALERT", {
+        message: `Error: Loading picture ${this.config.loading} !`,
+        type: "warn"
+      });
+    };
+    Waiting.appendChild(WaitingImg);
 
-    document.body.appendChild(Pages)
-    addAnimateCSS("EXT_PAGES-Loading", "rotateIn" , 1)
-    addAnimateCSS("EXT_Pages-GoogleAssistant", "flipInX" , 1)
+    document.body.appendChild(Pages);
+    addAnimateCSS("EXT_PAGES-Loading", "rotateIn" , 1);
+    addAnimateCSS("EXT_Pages-GoogleAssistant", "flipInX" , 1);
   },
 
   /** It's Loaded, hide loading page **/
-  Loaded: function () {
-    let Waiting = document.getElementById("EXT_PAGES")
-    Waiting.classList.add("hidden")
-    removeAnimateCSS("EXT_PAGES", "rotateIn")
+  Loaded () {
+    let Waiting = document.getElementById("EXT_PAGES");
+    Waiting.classList.add("hidden");
+    removeAnimateCSS("EXT_PAGES", "rotateIn");
   },
 
   /**
@@ -407,13 +408,13 @@ Module.register('EXT-Pages', {
    *
    * @param {number} delay the delay, in milliseconds.
    */
-  resetTimerWithDelay: function (delay) {
-    let rotationTime = this.config.rotationTimes[this.curPage] ? this.config.rotationTimes[this.curPage] : this.config.rotationTime
+  resetTimerWithDelay (delay) {
+    let rotationTime = this.config.rotationTimes[this.curPage] ? this.config.rotationTimes[this.curPage] : this.config.rotationTime;
     if (rotationTime > 0) {
-      clearInterval(this.timer)
+      clearInterval(this.timer);
       this.timer = setInterval(() => {
-        this.notificationReceived('EXT_PAGES-INCREMENT')
-      }, rotationTime+this.config.animationTime)
+        this.notificationReceived("EXT_PAGES-INCREMENT");
+      }, rotationTime+this.config.animationTime);
     }
   },
 
@@ -425,15 +426,15 @@ Module.register('EXT-Pages', {
    *
    * @param {boolean} isRotating the parameter, if you want to pause or resume.
    */
-  setRotation: function (isRotating) {
-    const stateBaseString = (isRotating) ? "resum" : "paus"
+  setRotation (isRotating) {
+    const stateBaseString = (isRotating) ? "resum" : "paus";
     if (isRotating === !this.rotationPaused) {
-      console.warn(`[Pages]: Was asked to ${stateBaseString}e but rotation is already ${stateBaseString}ed!`)
+      console.warn(`[Pages]: Was asked to ${stateBaseString}e but rotation is already ${stateBaseString}ed!`);
     } else {
-      logPages(`${stateBaseString}ing rotation`)
-      if (!isRotating) clearInterval(this.timer)
-      else this.resetTimerWithDelay()
-      this.rotationPaused = !isRotating
+      logPages(`${stateBaseString}ing rotation`);
+      if (!isRotating) clearInterval(this.timer);
+      else this.resetTimerWithDelay();
+      this.rotationPaused = !isRotating;
     }
   },
 
@@ -442,79 +443,79 @@ Module.register('EXT-Pages', {
    *
    * @param {string} name the name of the hiddenPage we want to show
    */
-  showHiddenPage: function (name) {
+  showHiddenPage (name) {
     // Only proceed if the named hidden page actually exists
     if (name in this.config.hiddenPages) {
-      this.isInHiddenPage= true
-      this.animatePageChange(name)
+      this.isInHiddenPage= true;
+      this.animatePageChange(name);
     } else {
-      console.error(`[Pages] Hidden page "${name}" does not exist!`)
+      console.error(`[Pages] Hidden page "${name}" does not exist!`);
       this.sendNotification("EXT_ALERT", {
         message: `Error: Hidden page "${name}" does not exist!`,
         type: "error"
-      })
+      });
     }
   },
 
-  checkPagesConfig: function() {
+  checkPagesConfig () {
     if (Object.keys(this.config.pages).length) {
       for (let i = 0; i < Object.keys(this.config.pages).length; i += 1) {
         if (!this.config.pages[i]) {
-          Log.error("[Pages] Page " + i + " is undefined")
+          Log.error(`[Pages] Page ${i} is undefined`);
           this.sendNotification("EXT_ALERT", {
-            message: "Error: Page " + i + " is undefined",
+            message: `Error: Page ${i} is undefined`,
             type: "error"
-          })
+          });
         }
       }
     }
   },
 
-  EXT_TELBOTCommands: function(commander) {
+  EXT_TELBOTCommands (commander) {
     commander.add({
       command: "pages",
       description: "Change page number",
       callback: "tbPages"
-    })
+    });
     if (Object.keys(this.config.hiddenPages).length) {
       commander.add({
         command: "hidden",
         description: "Choose an hidden page",
         callback: "tbHiddenPages"
-      })
+      });
     }
   },
 
-  tbPages: function(command, handler) {
+  tbPages (command, handler) {
     if (handler.args) {
-      var args = handler.args.split(" ")
+      var args = handler.args.split(" ");
       if (args[0] && !isNaN(args[0])) {
         if (args[0] >= Object.keys(this.config.pages).length) {
-          return handler.reply("TEXT", "Page not found: " + args[0])
+          return handler.reply("TEXT", `Page not found: ${args[0]}`);
         }
-        handler.reply("TEXT", "Change page number to " + args[0])
-        return this.notificationReceived("EXT_PAGES-CHANGED", parseInt(args[0]))
+        handler.reply("TEXT", `Change page number to ${args[0]}`);
+        return this.notificationReceived("EXT_PAGES-CHANGED", parseInt(args[0]));
       } else {
-        return handler.reply("TEXT", "invalid number page!")
+        return handler.reply("TEXT", "invalid number page!");
       }
     }
-    handler.reply("TEXT", "/pages <page number>")
+    handler.reply("TEXT", "/pages <page number>");
   },
 
-  tbHiddenPages: function(command, handler) {
+  tbHiddenPages (command, handler) {
     if (handler.args) {
-      var args = handler.args.split(" ")
+      var args = handler.args.split(" ");
       if (args[0] && args[0] in this.config.hiddenPages) {
-        handler.reply("TEXT", "Change to hidden page: " + args[0])
-        return this.notificationReceived("EXT_PAGES-HIDDEN_SHOW", args[0])
+        handler.reply("TEXT", `Change to hidden page: ${args[0]}`);
+        return this.notificationReceived("EXT_PAGES-HIDDEN_SHOW", args[0]);
       } else {
-        return handler.reply("TEXT", "invalid hidden page name!")
+        return handler.reply("TEXT", "invalid hidden page name!");
       }
     }
-    let hiddenKey = " "
+    let hiddenKey = " ";
     for (const [key, value] of Object.entries(this.config.hiddenPages)) {
-      hiddenKey += key + " "
+      hiddenKey += `${key} `;
     }
-    handler.reply("TEXT", "/hidden <hidden page name>\nFrom config valid names:" + hiddenKey, {parse_mode:'Markdown'})
+    handler.reply("TEXT", `/hidden <hidden page name>\nFrom config valid names:${hiddenKey}`, { parse_mode:"Markdown" });
   }
 });
