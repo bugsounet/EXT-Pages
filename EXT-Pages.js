@@ -126,7 +126,7 @@ Module.register("EXT-Pages", {
       this.sendSocketNotification("INIT");
       logPages("received that all objects are created; will now hide things!");
       this.Loaded();
-      this.animatePageChange();
+      this.animatePageChange(undefined, true);
       this.resetTimerWithDelay(0);
       this.ready = true;
       this.sendNotification("EXT_HELLO", this.name);
@@ -171,7 +171,7 @@ Module.register("EXT-Pages", {
           this.isInHiddenPage= false;
           this.setRotation(true);
         }
-        this.updatePages();
+        this.updatePages(false);
         break;
       case "EXT_PAGES-LOCK":
         if (sender.name === "MMM-GoogleAssistant") {
@@ -196,7 +196,7 @@ Module.register("EXT-Pages", {
           this.setRotation(true);
         }
         this.changePageBy(payload, 1);
-        this.updatePages();
+        this.updatePages(true);
         break;
       case "EXT_PAGES-DECREMENT":
         if (this.locked) return;
@@ -208,7 +208,7 @@ Module.register("EXT-Pages", {
         // We can't just pass in -payload for situations where payload is null
         // JS will coerce -payload to -0.
         this.changePageBy(payload ? -payload : payload, -1);
-        this.updatePages();
+        this.updatePages(true);
         break;
       case "EXT_PAGES-NUMBER":
         this.sendNotification("EXT-PAGES_NUMBER_IS", {
@@ -240,7 +240,7 @@ Module.register("EXT-Pages", {
           this.isInHiddenPage= false;
           this.setRotation(true);
         }
-        this.animatePageChange();
+        this.animatePageChange(undefined, true);
         break;
       case "EXT_PAGES-Gateway":
         if (sender.name === "MMM-GoogleAssistant") this.sendNotification("EXT_PAGES-Gateway", this.config.Gateway);
@@ -281,10 +281,10 @@ Module.register("EXT-Pages", {
    * Handles hiding the current page's elements and showing the next page's
    * elements.
    */
-  updatePages () {
-    // Update iff there's at least one page.
+  updatePages (hideAll) {
+    // Update if there's at least one page.
     if (Object.keys(this.config.pages).length !== 0) {
-      this.animatePageChange();
+      this.animatePageChange(undefined, hideAll);
       if (!this.rotationPaused) this.resetTimerWithDelay(0);
       this.sendNotification("EXT_PAGES-NUMBER_IS", {
         Actual: this.curPage,
@@ -307,7 +307,7 @@ Module.register("EXT-Pages", {
    * @param {string} [targetPageName] the name of the hiddenPage we want to show.
    * Optional and only used when we want to switch to a hidden page
    */
-  animatePageChange (targetPageName) {
+  animatePageChange (targetPageName, hideAll) {
     let lockStringObj = { lockString: "EXT-Pages-Locked" };
 
     // Hides all modules not on the current page. This hides any module not
@@ -334,7 +334,7 @@ Module.register("EXT-Pages", {
 
     MM.getModules()
       .exceptModule(this)
-      .exceptWithClass(isHiddenPages ? [] : (this.config.hideBeforeRotation ? this.config.fixed : modulesToShow))
+      .exceptWithClass(isHiddenPages ? [] : ((this.config.hideBeforeRotation || hideAll) ? this.config.fixed : modulesToShow))
       .enumerate((module) => {
         if (!module.hidden) module.hide(animationTime, () => {}, lockStringObj);
       });
