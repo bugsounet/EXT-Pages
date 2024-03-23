@@ -406,14 +406,22 @@ Module.register("EXT-Pages", {
   /**
    * Resets the page changing timer with a delay.
    *
-   * @param {number} delay the delay, in milliseconds.
    */
-  resetTimerWithDelay (delay) {
+  resetTimerWithDelay () {
     let rotationTime = this.config.rotationTimes[this.curPage] ? this.config.rotationTimes[this.curPage] : this.config.rotationTime;
     if (rotationTime > 0) {
       clearInterval(this.timer);
       this.timer = setInterval(() => {
-        this.notificationReceived("EXT_PAGES-INCREMENT");
+        // from EXT_PAGES-INCREMENT received notification
+        if (this.locked) return;
+        logPages("Timer Increment pages!");
+        if (this.isInHiddenPage) {
+          this.isInHiddenPage= false;
+          this.setRotation(true);
+        }
+        this.changePageBy(undefined, 1);
+        // don't hide all modules with `false`
+        this.updatePages(false);
       }, rotationTime+this.config.animationTime);
     }
   },
