@@ -171,7 +171,7 @@ Module.register("EXT-Pages", {
           this.isInHiddenPage= false;
           this.setRotation(true);
         }
-        this.updatePages(false);
+        this.updatePages(true);
         break;
       case "EXT_PAGES-LOCK":
         if (sender.name === "MMM-GoogleAssistant") {
