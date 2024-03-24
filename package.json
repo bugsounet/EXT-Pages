@@ -1,7 +1,7 @@
 {
   "name": "EXT-Pages",
-  "version": "3.2.0",
-  "rev": "240302",
+  "version": "3.2.1",
+  "rev": "240323",
   "description": "allows you to have pages in your magic mirror",
   "main": "EXT-Pages.js",
   "scripts": {
@@ -38,12 +38,12 @@
     "node": ">=18.0.0"
   },
   "dependencies": {
-    "esbuild": "^0.20.1",
+    "esbuild": "^0.20.2",
     "glob": "^10.3.10"
   },
   "devDependencies": {
     "@eslint/js": "^8.57.0",
-    "@stylistic/eslint-plugin": "^1.6.3",
+    "@stylistic/eslint-plugin": "^1.7.0",
     "eslint": "^8.57.0",
     "eslint-plugin-import": "^2.29.1"
   }
