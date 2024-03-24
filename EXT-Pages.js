@@ -127,7 +127,7 @@ Module.register("EXT-Pages", {
       logPages("received that all objects are created; will now hide things!");
       this.Loaded();
       this.animatePageChange(undefined, true);
-      this.resetTimerWithDelay(0);
+      this.resetTimerWithDelay();
       this.ready = true;
       this.sendNotification("EXT_HELLO", this.name);
       this.sendNotification("EXT_PAGES-NUMBER_IS", {
@@ -191,12 +191,7 @@ Module.register("EXT-Pages", {
       case "EXT_PAGES-INCREMENT":
         if (this.locked) return;
         logPages("Received a notification to increment pages!");
-        if (this.isInHiddenPage) {
-          this.isInHiddenPage= false;
-          this.setRotation(true);
-        }
-        this.changePageBy(payload, 1);
-        this.updatePages(true);
+        this.incrementPages(payload,true)
         break;
       case "EXT_PAGES-DECREMENT":
         if (this.locked) return;
@@ -249,6 +244,15 @@ Module.register("EXT-Pages", {
     }
   },
 
+  incrementPages(pageBy= undefined, hideAll= false) {
+    if (this.isInHiddenPage) {
+      this.isInHiddenPage= false;
+      this.setRotation(true);
+    }
+    this.changePageBy(pageBy, 1);
+    this.updatePages(hideAll);
+  },
+
   /**
    * Changes the internal page number by the specified amount. If the provided
    * amount is invalid, use the fallback amount. If the fallback amount is
@@ -285,7 +289,7 @@ Module.register("EXT-Pages", {
     // Update if there's at least one page.
     if (Object.keys(this.config.pages).length !== 0) {
       this.animatePageChange(undefined, hideAll);
-      if (!this.rotationPaused) this.resetTimerWithDelay(0);
+      if (!this.rotationPaused) this.resetTimerWithDelay();
       this.sendNotification("EXT_PAGES-NUMBER_IS", {
         Actual: this.curPage,
         Total: Object.keys(this.config.pages).length
@@ -412,16 +416,9 @@ Module.register("EXT-Pages", {
     if (rotationTime > 0) {
       clearInterval(this.timer);
       this.timer = setInterval(() => {
-        // from EXT_PAGES-INCREMENT received notification
         if (this.locked) return;
         logPages("Timer Increment pages!");
-        if (this.isInHiddenPage) {
-          this.isInHiddenPage= false;
-          this.setRotation(true);
-        }
-        this.changePageBy(undefined, 1);
-        // don't hide all modules with `false`
-        this.updatePages(false);
+        this.incrementPages(undefined, false)
       }, rotationTime+this.config.animationTime);
     }
   },
