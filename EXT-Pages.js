@@ -191,7 +191,7 @@ Module.register("EXT-Pages", {
       case "EXT_PAGES-INCREMENT":
         if (this.locked) return;
         logPages("Received a notification to increment pages!");
-        this.incrementPages(payload,true)
+        this.incrementPages(payload,true);
         break;
       case "EXT_PAGES-DECREMENT":
         if (this.locked) return;
@@ -244,7 +244,7 @@ Module.register("EXT-Pages", {
     }
   },
 
-  incrementPages(pageBy= undefined, hideAll= false) {
+  incrementPages (pageBy= undefined, hideAll= false) {
     if (this.isInHiddenPage) {
       this.isInHiddenPage= false;
       this.setRotation(true);
@@ -418,7 +418,7 @@ Module.register("EXT-Pages", {
       this.timer = setInterval(() => {
         if (this.locked) return;
         logPages("Timer Increment pages!");
-        this.incrementPages(undefined, false)
+        this.incrementPages(undefined, false);
       }, rotationTime+this.config.animationTime);
     }
   },
