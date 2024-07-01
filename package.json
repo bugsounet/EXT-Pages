@@ -1,12 +1,12 @@
 {
   "name": "EXT-Pages",
-  "version": "3.2.2",
-  "rev": "240528",
+  "version": "3.3.0",
+  "rev": "240701",
   "description": "allows you to have pages in your magic mirror",
   "main": "EXT-Pages.js",
   "scripts": {
     "preinstall": "installer/preinstall.sh",
-    "postinstall": "installer/postinstall.sh -m -b",
+    "postinstall": "installer/postinstall.sh -m",
     "update": "installer/update.sh",
     "reset": "git reset --hard",
     "clean": "rm -rf node_modules package-lock.json",
@@ -27,7 +27,7 @@
   ],
   "license": "MIT",
   "bugs": {
-    "url": "https://forum.bugsounet.fr"
+    "url": "https://github.com/bugsounet/EXT-Pages/issues"
   },
   "repository": {
     "type": "git",
@@ -35,11 +35,11 @@
   },
   "homepage": "https://wiki.bugsounet.fr/en/EXT-Pages",
   "engines": {
-    "node": ">=18.0.0"
+    "node": ">=20.0.0"
   },
   "dependencies": {
-    "esbuild": "^0.21.4",
-    "glob": "^10.4.1"
+    "esbuild": "^0.22.0",
+    "glob": "^10.4.2"
   },
   "devDependencies": {
     "@eslint/js": "^8.57.0",

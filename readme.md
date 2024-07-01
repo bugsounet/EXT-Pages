@@ -1,6 +1,6 @@
 # EXT-Pages - Extented for `MMM-GoogleAssistant`
 
-This [MagicMirror²][mm²] Module allows you to have animated pages in your magic mirror!<br>
+This MagicMirror² Module allows you to have animated pages in your magic mirror!<br>
 Want to have more modules in your magic mirror, but want to keep the format?<br>
 Or, want to have grouped modules that are themed together? Look no further!<br>
 
