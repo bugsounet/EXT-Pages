@@ -38,7 +38,7 @@
     "node": ">=20.0.0"
   },
   "dependencies": {
-    "esbuild": "^0.22.0",
+    "esbuild": "^0.23.0",
     "glob": "^10.4.3"
   },
   "devDependencies": {
