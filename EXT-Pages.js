@@ -143,7 +143,7 @@ Module.register("EXT-Pages", {
         let pagesChangedValue = payload;
 
         if (this.locked && (!sender || sender.name !== "MMM-GoogleAssistant")) {
-          this.sendNotification("EXT_ALERT", {
+          this.sendNotification("GA_ALERT", {
             message: "Error: EXT-PAGES is locked by MMM-GoogleAssistant!",
             type: "error"
           });
@@ -153,7 +153,7 @@ Module.register("EXT-Pages", {
         // assume: `payload = 0` is an empty object {}
         if (!pagesChangedValue || (typeof pagesChangedValue === "object" && !Object.keys(pagesChangedValue).length)) pagesChangedValue = 0;
         if (pagesChangedValue && isNaN(pagesChangedValue)) {
-          this.sendNotification("EXT_ALERT", {
+          this.sendNotification("GA_ALERT", {
             message: "Error: EXT_PAGES-CHANGED must have an number value",
             type: "error"
           });
@@ -161,7 +161,7 @@ Module.register("EXT-Pages", {
         }
         pagesChangedValue = parseInt(pagesChangedValue);
         if (pagesChangedValue >= Object.keys(this.config.pages).length || pagesChangedValue < 0) {
-          return this.sendNotification("EXT_ALERT", {
+          return this.sendNotification("GA_ALERT", {
             message: `Error: This page don't exist: ${payload}`,
             type: "error"
           });
@@ -295,7 +295,7 @@ Module.register("EXT-Pages", {
         Total: Object.keys(this.config.pages).length
       });
     } else {
-      this.sendNotification("EXT_ALERT", {
+      this.sendNotification("GA_ALERT", {
         message: "Error: Pages aren't properly defined!",
         type: "error"
       });
@@ -325,7 +325,7 @@ Module.register("EXT-Pages", {
       hiddenPage = this.config.hiddenPages[targetPageName];
     } else {
       if (!this.config.pages[this.curPage]) {
-        this.sendNotification("EXT_ALERT", {
+        this.sendNotification("GA_ALERT", {
           message: `Error: Page ${this.curPage} not found!`,
           type: "error"
         });
@@ -388,7 +388,7 @@ Module.register("EXT-Pages", {
     WaitingImg.src= `/modules/EXT-Pages/loading/${this.config.loading}`;
     WaitingImg.onerror= () => {
       WaitingImg.src= "/modules/EXT-Pages/loading/loading.png";
-      this.sendNotification("EXT_ALERT", {
+      this.sendNotification("GA_ALERT", {
         message: `Error: Loading picture ${this.config.loading} !`,
         type: "warn"
       });
@@ -455,7 +455,7 @@ Module.register("EXT-Pages", {
       this.animatePageChange(name);
     } else {
       console.error(`[Pages] Hidden page "${name}" does not exist!`);
-      this.sendNotification("EXT_ALERT", {
+      this.sendNotification("GA_ALERT", {
         message: `Error: Hidden page "${name}" does not exist!`,
         type: "error"
       });
@@ -467,7 +467,7 @@ Module.register("EXT-Pages", {
       for (let i = 0; i < Object.keys(this.config.pages).length; i += 1) {
         if (!this.config.pages[i]) {
           Log.error(`[Pages] Page ${i} is undefined`);
-          this.sendNotification("EXT_ALERT", {
+          this.sendNotification("GA_ALERT", {
             message: `Error: Page ${i} is undefined`,
             type: "error"
           });
