@@ -1,4 +1,9 @@
+/* global addAnimateCSS, removeAnimateCSS */
+
+var logPages = () => { /* do nothing */ };
+
 Module.register("EXT-Pages", {
+
   /**
    * This version use animateCSS of MM² v2.25.0
    */
@@ -52,7 +57,6 @@ Module.register("EXT-Pages", {
    * and sets the default current page to 0.
    */
   start () {
-    logPages = (...args) => { /* do nothing */ };
     if (this.config.debug) logPages = (...args) => { console.log("[PAGES]", ...args); };
     this.timer = null;
     // Clamp homePage value to [0, num pages).
@@ -62,7 +66,7 @@ Module.register("EXT-Pages", {
     this.checkPagesConfig();
     this.curPage = this.config.homePage;
     this.rotationPaused = false;
-    this.isInHiddenPage= false;
+    this.isInHiddenPage = false;
     this.locked = false;
     this.ready = false;
 
@@ -71,7 +75,7 @@ Module.register("EXT-Pages", {
 
     if (Object.keys(this.config.rotationTimes).length) {
       for (let i = 0; i < Object.keys(this.config.rotationTimes).length; i += 1) {
-        this.config.rotationTimes[i]= Math.max(this.config.rotationTimes[i], 0);
+        this.config.rotationTimes[i] = Math.max(this.config.rotationTimes[i], 0);
       }
     }
   },
@@ -140,7 +144,7 @@ Module.register("EXT-Pages", {
     switch (notification) {
       case "EXT_PAGES-CHANGED":
         logPages(`Received a notification to change to page ${payload}`);
-        let pagesChangedValue = payload;
+        var pagesChangedValue = payload;
 
         if (this.locked && (!sender || sender.name !== "MMM-GoogleAssistant")) {
           this.sendNotification("GA_ALERT", {
@@ -168,7 +172,7 @@ Module.register("EXT-Pages", {
         }
         this.curPage = pagesChangedValue;
         if (this.isInHiddenPage) {
-          this.isInHiddenPage= false;
+          this.isInHiddenPage = false;
           this.setRotation(true);
         }
         this.updatePages(true);
@@ -191,13 +195,13 @@ Module.register("EXT-Pages", {
       case "EXT_PAGES-INCREMENT":
         if (this.locked) return;
         logPages("Received a notification to increment pages!");
-        this.incrementPages(payload,true);
+        this.incrementPages(payload, true);
         break;
       case "EXT_PAGES-DECREMENT":
         if (this.locked) return;
         logPages("Received a notification to decrement pages!");
         if (this.isInHiddenPage) {
-          this.isInHiddenPage= false;
+          this.isInHiddenPage = false;
           this.setRotation(true);
         }
         // We can't just pass in -payload for situations where payload is null
@@ -232,7 +236,7 @@ Module.register("EXT-Pages", {
         logPages("Received a notification to leave the current hidden page ");
         if (this.locked) return;
         if (this.isInHiddenPage) {
-          this.isInHiddenPage= false;
+          this.isInHiddenPage = false;
           this.setRotation(true);
         }
         this.animatePageChange(undefined, true);
@@ -244,9 +248,9 @@ Module.register("EXT-Pages", {
     }
   },
 
-  incrementPages (pageBy= undefined, hideAll= false) {
+  incrementPages (pageBy = undefined, hideAll = false) {
     if (this.isInHiddenPage) {
-      this.isInHiddenPage= false;
+      this.isInHiddenPage = false;
       this.setRotation(true);
     }
     this.changePageBy(pageBy, 1);
@@ -376,7 +380,7 @@ Module.register("EXT-Pages", {
     Pages.appendChild(GoogleAssistant);
     let GoogleAssistantImg = document.createElement("img");
     GoogleAssistantImg.id = "EXT_Pages-GoogleAssistantImg";
-    GoogleAssistantImg.src= "/modules/EXT-Pages/loading/works-with-google-assistant.png";
+    GoogleAssistantImg.src = "/modules/EXT-Pages/loading/works-with-google-assistant.png";
     GoogleAssistant.appendChild(GoogleAssistantImg);
 
     let Waiting = document.createElement("div");
@@ -385,9 +389,9 @@ Module.register("EXT-Pages", {
 
     let WaitingImg = document.createElement("img");
     WaitingImg.id = "EXT_PAGES-Loading";
-    WaitingImg.src= `/modules/EXT-Pages/loading/${this.config.loading}`;
-    WaitingImg.onerror= () => {
-      WaitingImg.src= "/modules/EXT-Pages/loading/loading.png";
+    WaitingImg.src = `/modules/EXT-Pages/loading/${this.config.loading}`;
+    WaitingImg.onerror = () => {
+      WaitingImg.src = "/modules/EXT-Pages/loading/loading.png";
       this.sendNotification("GA_ALERT", {
         message: `Error: Loading picture ${this.config.loading} !`,
         type: "warn"
@@ -396,8 +400,8 @@ Module.register("EXT-Pages", {
     Waiting.appendChild(WaitingImg);
 
     document.body.appendChild(Pages);
-    addAnimateCSS("EXT_PAGES-Loading", "rotateIn" , 1);
-    addAnimateCSS("EXT_Pages-GoogleAssistant", "flipInX" , 1);
+    addAnimateCSS("EXT_PAGES-Loading", "rotateIn", 1);
+    addAnimateCSS("EXT_Pages-GoogleAssistant", "flipInX", 1);
   },
 
   /** It's Loaded, hide loading page **/
@@ -419,7 +423,7 @@ Module.register("EXT-Pages", {
         if (this.locked) return;
         logPages("Timer Increment pages!");
         this.incrementPages(undefined, false);
-      }, rotationTime+this.config.animationTime);
+      }, rotationTime + this.config.animationTime);
     }
   },
 
@@ -451,7 +455,7 @@ Module.register("EXT-Pages", {
   showHiddenPage (name) {
     // Only proceed if the named hidden page actually exists
     if (name in this.config.hiddenPages) {
-      this.isInHiddenPage= true;
+      this.isInHiddenPage = true;
       this.animatePageChange(name);
     } else {
       console.error(`[Pages] Hidden page "${name}" does not exist!`);
@@ -518,9 +522,9 @@ Module.register("EXT-Pages", {
       }
     }
     let hiddenKey = " ";
-    for (const [key, value] of Object.entries(this.config.hiddenPages)) {
+    for (const [key] of Object.entries(this.config.hiddenPages)) {
       hiddenKey += `${key} `;
     }
-    handler.reply("TEXT", `/hidden <hidden page name>\nFrom config valid names:${hiddenKey}`, { parse_mode:"Markdown" });
+    handler.reply("TEXT", `/hidden <hidden page name>\nFrom config valid names:${hiddenKey}`, { parse_mode: "Markdown" });
   }
 });
